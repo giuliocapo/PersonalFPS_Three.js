@@ -3,7 +3,6 @@ import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 
 
-
 var scene, camera, renderer, mesh;
 var meshFloor;
 
@@ -18,6 +17,24 @@ keyboard = {};
 var player = { height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.02 };
 var USE_WIREFRAME = false;
 
+//loading screen object (scene, camera, mesh)
+var loadingScreen = {
+    scene: new THREE.Scene(),
+    camera: new THREE.PerspectiveCamera(90, window.innerWidth/window.innerHeight, 0.1, 100),
+    box: new THREE.Mesh(
+        new THREE.BoxGeometry(0.5, 0.5, 0.5),
+        new THREE.MeshBasicMaterial({color: 0x4444ff})
+    )
+}
+//loading animation variables
+var boxSpeed = 0.05;
+var boxDirection = 1;
+var boxPosition = 0;
+
+//boolean variable to track when the resources are ready to load
+var LOADING_MANAGER = null;
+var RESOURCES_LOADED = false;
+
 function init() {
     // Create a scene and camera
     scene = new THREE.Scene();
@@ -30,8 +47,28 @@ function init() {
         1000
     );
 
+    //set up loading screen scene
+    loadingScreen.box.position.set(0,0,5);
+    loadingScreen.camera.lookAt(loadingScreen.box.position);
+    loadingScreen.scene.add(loadingScreen.box);
+
+    // Create a loading manager to set RESOURCES_LOADED when appropriate.
+    // Pass loadingManager to all resource loaders.
+    var loadingManager = new THREE.LoadingManager();
+
+    loadingManager.onProgress = function(item, loaded, total){
+        console.log(item, loaded, total);
+    };
+
+    loadingManager.onLoad = function(){
+        console.log("loaded all resources");
+        RESOURCES_LOADED = true;
+    };
+
+
+
     //texture loader
-    var textureLoader = new THREE.TextureLoader();
+    var textureLoader = new THREE.TextureLoader(loadingManager);
 
     // A Mesh is made up of a geometry and a material.
     // Materials affect how the geometry looks, especially under lights.
@@ -86,15 +123,33 @@ function init() {
     box.position.set(2.5, 3/2, 2.5);
 
     // Model/material loading!
-    var mtlLoader = new MTLLoader();
-    mtlLoader.load("Models/OBJ format/bed.mtl", function(materials){
+    var mtlLoader = new MTLLoader(loadingManager);
+    mtlLoader.load("Models/OBJ format/tent_detailedOpen.mtl", function(materials){
 
         // materials.preload();
-        var objLoader = new OBJLoader();
+        var objLoader = new OBJLoader(loadingManager);
         objLoader.setMaterials(materials);
 
-        objLoader.load("Models/OBJ format/bed.obj", function(mesh) {
+        objLoader.load("Models/OBJ format/tent_detailedOpen.obj", function(mesh) {
+
             scene.add(mesh);
+
+            //make object bigger
+            mesh.scale.set(8, 8, 8); //scale 5x on each axis
+
+            //set object position
+            mesh.position.set(-8,0,6)
+            mesh.rotation.y += Math.PI/1.3;
+
+            //shadows
+            //due to the fact that objs are made of many small meshes we need to traverse each one and add the properties in this case shadows
+            mesh.traverse(function (node)
+            {
+                if (node instanceof THREE.Mesh){
+                    node.castShadow = true;
+                    node.receiveShadow = true;
+                }
+            });
         });
 
 
@@ -118,6 +173,27 @@ function init() {
 }
 
 function animate() {
+
+    if ( RESOURCES_LOADED === false){
+        requestAnimationFrame(animate)
+
+        // Rotate the loading screen box
+        loadingScreen.box.rotation.x += 0.05;
+        loadingScreen.box.rotation.y += 0.05;
+
+        // Bounce the loading screen box
+        boxPosition += boxSpeed * boxDirection;
+        if (boxPosition > 3 || boxPosition < -3) {
+            boxDirection *= -1; // Reverse direction when hitting the boundary
+        }
+        loadingScreen.box.position.x = Math.sin(boxPosition); //added sin casually and appreciated the animation
+
+
+        renderer.render(loadingScreen.scene, loadingScreen.camera);
+        return;
+    }
+
+
     requestAnimationFrame(animate); // Tells the browser to smoothly render at 60Hz
 
     // Rotate our mesh.

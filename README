@@ -81,3 +81,13 @@ Load model and materials
 
 
 Add to the scene
+5.
+create loading scene is an extra, camera, and a mesh.
+
+Create a loadingManager
+
+add LoadingManage to resource loader (texture, MTL, OBJ)
+
+render the loading scene until resource are loaded.
+
+
