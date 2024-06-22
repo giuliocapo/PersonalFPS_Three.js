@@ -1,0 +1,83 @@
+This is my personal FPS, i'm building the idea while studying three.js here i will write the steps of my implementation:
+
+1.
+I created the scene, camera, renderer, mesh, meshFloor, Player object and the movement.
+The scene has been created with the classical method of three.js, i used then perspective camera that i let it point
+to the Mesh (for now is a cube with wireframe: true) but standing in y at player,height with:
+    // Move the camera to 0,player.height,-5 (the Y axis is "up")
+    camera.position.set(0, player.height, -5);
+
+    // Point the camera to look at 0,player.height,0
+    camera.lookAt(new THREE.Vector3(0, player.height, 0));
+
+For the renderer to generate/display my scene i used the WebGLRenderer:
+renderer = new THREE.WebGLRenderer({ antialias: true }); // Ensure correct initialization of WebGLRenderer
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement); // Append renderer's DOM element to the body
+
+To display all: renderer.render(scene, camera);
+
+The meshFloor is the classical plane in three.js:
+meshFloor = new THREE.Mesh(
+        new THREE.PlaneGeometry(10,10., 10,10), //more segments = more polygons, which results in more detail.
+        new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: true}), //wireframe is useful to see the true geometry of things.
+    )
+    meshFloor.rotation.x -= Math.PI/2; //rotate the mesh of 90grades x
+
+Then I implemented the movement:
+i put eventListener to listen when you press i key and then i changed camera position for W and S in this way, while
+for A and D i shift camera rotation.y for a MATH.PI/2 that is 90 grades, im using the radiant for now because trigonometric fun as Math.cos ect in JS are in radiant:
+if(keyboard[87]){ // W key
+        camera.position.x -= Math.sin(camera.rotation.y) * player.speed;
+        camera.position.z -= -Math.cos(camera.rotation.y) * player.speed;
+    }
+To rotate the camera on player instead:
+if(keyboard[37]){ // left arrow key
+        camera.rotation.y -= player.turnSpeed;
+
+2.
+Turn on shadows in the renderer with shadowMapping used to create shadows by rendering the scene from the perspective of the light source to create a depth map
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.BasicShadowMap;
+
+Replaced MeshBasicMaterial with MeshPhongMaterial
+
+Added an ambient light to the scene
+
+Added a point-light to the scene
+light = new THREE.PointLight(0xffffff, 25, 18);
+    light.position.set(-3,6,-3);
+    light.castShadow = true;
+    // Will not light anything closer than 0.1 units or further than 25 units
+    light.shadow.camera.near = 0.1;
+    light.shadow.camera.far = 25;
+    scene.add(light);
+
+3.
+Box added with texture, bump and normal maps loaded.
+Attach them to a mesh's PhongMaterial.
+
+boxTexture =  textureLoader.load("./textures/crate0/crate0_diffuse.png");
+    boxBumpMap = textureLoader.load("textures/crate0/crate0_bump.png");
+    boxNormalMap = textureLoader.load("./textures/crate0/crate0_normal.png");
+
+    box = new THREE.Mesh(
+        new THREE.BoxGeometry(3, 3, 3),
+        new THREE.MeshPhongMaterial({
+            color: 0xffffff,
+            map: boxTexture,
+            bumpMap: boxBumpMap,
+            normalMap: boxNormalMap
+        })
+    );
+4.
+Add MTLLoader.js and OBJLoader.js
+
+
+Locate some models
+
+
+Load model and materials
+
+
+Add to the scene
