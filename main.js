@@ -2,9 +2,6 @@ import * as THREE from 'three';
 import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-
-const loader = new GLTFLoader();
 
 var scene, camera, renderer, mesh;
 var meshFloor;
@@ -35,7 +32,6 @@ var boxDirection = 1;
 var boxPosition = 0;
 
 //boolean variable to track when the resources are ready to load
-var LOADING_MANAGER = null;
 var RESOURCES_LOADED = false;
 
 //models is an object to hold OBJ and MTL file locations that will be loaded to the "mesh" field
@@ -54,6 +50,11 @@ var models = {
         obj: "Models/OBJ format/cliff_block_rock.obj",
         mtl: "Models/OBJ format/cliff_block_rock.mtl",
         mesh: null,
+    },
+    pistol: {
+        obj: "Models/OBJ weapons/uziLong.obj",
+        mtl: "Models/OBJ weapons/uziLong.mtl",
+        mesh: null,
     }
 }
 //Meshes index that will store every object appears in the scene indexed by a key
@@ -71,6 +72,8 @@ function init() {
         1000
     );
 
+
+
     //set up loading screen scene
     loadingScreen.box.position.set(0,0,5);
     loadingScreen.camera.lookAt(loadingScreen.box.position);
@@ -86,8 +89,12 @@ function init() {
 
     loadingManager.onLoad = function(){
         console.log("loaded all resources");
-        RESOURCES_LOADED = true;
-        onResourcesLoaded();
+        // watch the loading screen for 5 seconds
+        setTimeout(function() {
+            console.log("5 seconds have passed!");
+            RESOURCES_LOADED = true;
+            onResourcesLoaded();
+        }, 5);
     };
 
 
@@ -226,6 +233,13 @@ function onResourcesLoaded(){
     scene.add(meshes["cliff_block_rock"]);
     meshes["cliff_block_rock"].scale.set(5, 5, 5);
 
+    //player weapon
+    meshes["playerWeapon"] = models.pistol.mesh.clone();
+    meshes["playerWeapon"].position.set(0,1,0);
+    scene.add(meshes["playerWeapon"]);
+    meshes["playerWeapon"].scale.set(10, 10, 10);
+
+
     //console.log(meshes); here you can see how important asynchronous loop is because if you stamp you see that there are not ordered as they have been put in the closed loop "_key"
 }
 function animate() {
@@ -251,6 +265,7 @@ function animate() {
 
 
     requestAnimationFrame(animate); // Tells the browser to smoothly render at 60Hz
+
 
     // Rotate our mesh.
     mesh.rotation.x += 0.01;
@@ -285,6 +300,20 @@ function animate() {
     if(keyboard[39]){ // right arrow key
         camera.rotation.y += player.turnSpeed;
     }
+
+    // position the gun in front of the camera
+    var time = Date.now() * 0.0005;
+
+    meshes["playerWeapon"].position.set(
+        camera.position.x - Math.sin(camera.rotation.y + Math.PI/6) * 0.75,
+        camera.position.y - 0.5 + Math.sin(time*4 + camera.position.x + camera.position.z)*0.01, //i added the camera.position.x and z to make the inhalation animation irregular when i'm moving
+        camera.position.z  + Math.cos(camera.rotation.y + Math.PI/6) * 0.75
+    );
+    meshes["playerWeapon"].rotation.set(
+        camera.rotation.x,
+        camera.rotation.y - Math.PI,
+        camera.rotation.z
+    );
 
     // Draw the scene from the perspective of the camera.
     renderer.render(scene, camera);

@@ -107,7 +107,7 @@ add .obj and .mtl files to our models index
 add a delta timer to the game
 
 
-clone the model into the mesh in fron of the camera
+clone the model into the mesh in front of the camera
 
 
 add rhythmic motion to the mesh
