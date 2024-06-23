@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
+const loader = new GLTFLoader();
 
 var scene, camera, renderer, mesh;
 var meshFloor;
@@ -35,6 +38,27 @@ var boxPosition = 0;
 var LOADING_MANAGER = null;
 var RESOURCES_LOADED = false;
 
+//models is an object to hold OBJ and MTL file locations that will be loaded to the "mesh" field
+var models = {
+    tent: {
+        obj: "Models/OBJ format/tent_detailedOpen.obj",
+        mtl: "Models/OBJ format/tent_detailedOpen.mtl",
+        mesh: null,
+    },
+    campfire_stones: {
+        obj: "Models/OBJ format/campfire_stones.obj",
+        mtl: "Models/OBJ format/campfire_stones.mtl",
+        mesh: null,
+    },
+    cliff_block_rock: {
+        obj: "Models/OBJ format/cliff_block_rock.obj",
+        mtl: "Models/OBJ format/cliff_block_rock.mtl",
+        mesh: null,
+    }
+}
+//Meshes index that will store every object appears in the scene indexed by a key
+var meshes = {}
+
 function init() {
     // Create a scene and camera
     scene = new THREE.Scene();
@@ -63,6 +87,7 @@ function init() {
     loadingManager.onLoad = function(){
         console.log("loaded all resources");
         RESOURCES_LOADED = true;
+        onResourcesLoaded();
     };
 
 
@@ -122,39 +147,35 @@ function init() {
     box.castShadow = true;
     box.position.set(2.5, 3/2, 2.5);
 
-    // Model/material loading!
-    var mtlLoader = new MTLLoader(loadingManager);
-    mtlLoader.load("Models/OBJ format/tent_detailedOpen.mtl", function(materials){
 
-        // materials.preload();
-        var objLoader = new OBJLoader(loadingManager);
-        objLoader.setMaterials(materials);
+    //Load Models
+    //I wrap everything in the for loop in a function to stop the key variable from changing during the loading process
+    //first will do "myFirstObj" the loop then changes to "secondObj" the first one when finished put the mesh into _key and you can end up with a mesh loaded in the wrong place
+    for (var _key in models) { // Iterate through all keys (tent, campfire_stones, cliff_block_rock) in the models object
+        (function(key) { // Create a closure to maintain the value of 'key' for each iteration asynchronous of the loop
+            //console.log(_key); first time is tent
+            //console.log(key); first time is tent, so will just traverse the models structure
+            var mtlLoader = new MTLLoader(loadingManager);
+            mtlLoader.load(models[key].mtl, function(materials) {
+                materials.preload(); // Prepare the materials for use
 
-        objLoader.load("Models/OBJ format/tent_detailedOpen.obj", function(mesh) {
+                var objLoader = new OBJLoader(loadingManager);
 
-            scene.add(mesh);
+                objLoader.setMaterials(materials);
+                objLoader.load(models[key].obj, function(mesh) {
 
-            //make object bigger
-            mesh.scale.set(8, 8, 8); //scale 5x on each axis
-
-            //set object position
-            mesh.position.set(-8,0,6)
-            mesh.rotation.y += Math.PI/1.3;
-
-            //shadows
-            //due to the fact that objs are made of many small meshes we need to traverse each one and add the properties in this case shadows
-            mesh.traverse(function (node)
-            {
-                if (node instanceof THREE.Mesh){
-                    node.castShadow = true;
-                    node.receiveShadow = true;
-                }
+                    mesh.traverse(function(node) { // Traverse all nodes of the loaded mesh
+                        if (node instanceof THREE.Mesh) {
+                            node.castShadow = true;
+                            node.receiveShadow = true;
+                        }
+                    });
+                    models[key].mesh = mesh; // Store the loaded mesh in the models object at the corresponding key
+                });
             });
-        });
 
-
-    });
-
+        })(_key); // Pass the current key to the self-invoking function to maintain context of the asynchronous loop
+    }
     // Move the camera to 0,player.height,-5 (the Y axis is "up")
     camera.position.set(0, player.height, -5);
     // Point the camera to look at 0,player.height,0
@@ -172,6 +193,41 @@ function init() {
     animate();
 }
 
+//function to trigger when all resources are loaded
+function onResourcesLoaded(){
+
+    // Clone models into meshes.
+    meshes["tent1"] = models.tent.mesh.clone();
+    meshes["tent2"] = models.tent.mesh.clone();
+    meshes["campfire1"] = models.campfire_stones.mesh.clone();
+    meshes["campfire2"] = models.campfire_stones.mesh.clone();
+    meshes["cliff_block_rock"] = models.cliff_block_rock.mesh.clone();
+
+    // Reposition individual meshes, then add meshes to scene
+    meshes["tent1"].position.set(-0, 0, 4);
+    scene.add(meshes["tent1"]);
+    meshes["tent1"].scale.set(5, 5, 5);
+
+    meshes["tent2"].position.set(-5, 0, 4);
+    scene.add(meshes["tent2"]);
+    meshes["tent2"].scale.set(5, 5, 5);
+
+    meshes["campfire1"].position.set(-1, 0, 1);
+    meshes["campfire2"].position.set(-5, 0, 1);
+
+
+    scene.add(meshes["campfire1"]);
+    scene.add(meshes["campfire2"]);
+    meshes["campfire1"].scale.set(5, 5, 5);
+    meshes["campfire2"].scale.set(5, 5, 5);
+
+    meshes["cliff_block_rock"].position.set(-11, -1, 1);
+    meshes["cliff_block_rock"].rotation.set(0, Math.PI, 0); // Rotate it to face the other way.
+    scene.add(meshes["cliff_block_rock"]);
+    meshes["cliff_block_rock"].scale.set(5, 5, 5);
+
+    //console.log(meshes); here you can see how important asynchronous loop is because if you stamp you see that there are not ordered as they have been put in the closed loop "_key"
+}
 function animate() {
 
     if ( RESOURCES_LOADED === false){

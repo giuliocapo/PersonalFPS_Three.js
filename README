@@ -89,5 +89,27 @@ Create a loadingManager
 add LoadingManage to resource loader (texture, MTL, OBJ)
 
 render the loading scene until resource are loaded.
+6.
+I've separated the models and meshes to save memory. instead of loading and adding OBJ models to the scene we will clone
+the models. This way we can have 100 objects all using the same geometry.
+
+create a models index - holds model geometry/material data
+
+create a meshes index- 'instances' of models
+
+rewrite model loading code to load from models index
+
+add a function to run when all resources are loaded like a second init(), function
+7.
+add .obj and .mtl files to our models index
+
+
+add a delta timer to the game
+
+
+clone the model into the mesh in fron of the camera
+
+
+add rhythmic motion to the mesh
 
 
