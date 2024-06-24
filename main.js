@@ -13,8 +13,9 @@ var light;
 
 var keyboard;
 keyboard = {};
+
 //create a player object to hold details about the 'player', such as height and move speed
-var player = { height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.02 };
+var player = { height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.02, canShoot: 0 };
 var USE_WIREFRAME = false;
 
 //loading screen object (scene, camera, mesh)
@@ -57,8 +58,12 @@ var models = {
         mesh: null,
     }
 }
-//Meshes index that will store every object appears in the scene indexed by a key
+//Meshes object to index and will store every object appears in the scene indexed by a key
 var meshes = {}
+
+//Bullets array to hold the bullets
+var bullets = [];
+
 
 function init() {
     // Create a scene and camera
@@ -274,6 +279,7 @@ function animate() {
     //rotate box
     box.rotation.y += 0.001;
 
+
     // Keyboard movement inputs
     if(keyboard[87]){ // W key
         camera.position.x -= Math.sin(camera.rotation.y) * player.speed;
@@ -301,6 +307,48 @@ function animate() {
         camera.rotation.y += player.turnSpeed;
     }
 
+    //create a loop to update the bullets every frame
+    for(var index = 0; index<bullets.length; index+=1){
+        if (bullets[index] === undefined) continue;
+        if( bullets[index].alive === false){ //if the bullet is not alive, skip to the next one and remove this one
+            bullets.splice(index, 1)
+            continue;
+        }
+
+        bullets[index].position.add(bullets[index].velocity); //add velocity to bullet's position
+    }
+
+    //spacebar clicked to shoot, it creates a sphere geometry
+    if (keyboard[32] && player.canShoot <= 0){
+        var bullet = new THREE.Mesh(
+            new THREE.SphereGeometry(0.05,8,8),
+            new THREE.MeshBasicMaterial({color: 0xffffff})
+    );
+        bullet.position.set(
+            meshes["playerWeapon"].position.x,
+            meshes["playerWeapon"].position.y + 0.17,
+            meshes["playerWeapon"].position.z
+        )
+
+        bullet.velocity =new THREE.Vector3(
+            -Math.sin(camera.rotation.y), //being 45grades to give me direction of the bullet sin of y give me direction x
+            0, //we have no vertical velocity
+            Math.cos(camera.rotation.y) //being 45grades to give me direction of the bullet cos of y give me direction z
+        )
+        bullet.alive = true;
+        setTimeout(function(){ //timeToLive of the bullets to clear up the scene
+                bullet.alive = false;
+                scene.remove(bullet);
+
+        },1000);
+
+        bullets.push(bullet);
+        scene.add(bullet);
+        player.canShoot = 20; //1 bullet per 20 frames
+    }
+    if (player.canShoot > 0) {
+        player.canShoot -= 1;
+    }
     // position the gun in front of the camera
     var time = Date.now() * 0.0005;
 

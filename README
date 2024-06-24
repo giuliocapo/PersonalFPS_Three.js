@@ -112,4 +112,25 @@ clone the model into the mesh in front of the camera
 
 add rhythmic motion to the mesh
 
+8.
+create a canShoot variable to delay shoot speed
+create a bullets array
+create a bullet on spacebar key press
+move bullets
+clean up bullets when they expire
 
+Shooting Logic:
+
+Within the animate function, it checks if the spacebar (key code 32) is pressed and if player.canShoot is 0 or less.
+If true, it creates a new bullet using THREE.Mesh with a sphere geometry and a basic material.
+The bullet’s position is set based on the player's weapon position.
+The bullet’s velocity is calculated using the sine and cosine of the camera's Y rotation to determine the direction.
+The bullet is marked as alive, and a setTimeout is used to remove it from the scene after 1 second.
+The bullet is added to the scene and an array bullets, and player.canShoot is set to 20, enforcing a cooldown period before the next shot.
+
+Bullet Update Logic:
+
+Each frame, the animate function also iterates through the bullets array.
+For each bullet, if it’s not alive, it’s removed from the array.
+If the bullet is alive, its position is updated by adding its velocity.
+Additionally, player.canShoot is decremented each frame until it reaches 0, allowing the player to shoot again after 20 frames.
