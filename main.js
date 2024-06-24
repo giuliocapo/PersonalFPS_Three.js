@@ -15,7 +15,7 @@ var keyboard;
 keyboard = {};
 
 //create a player object to hold details about the 'player', such as height and move speed
-var player = { height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.02, canShoot: 0 };
+var player = { height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 };
 var USE_WIREFRAME = false;
 
 //loading screen object (scene, camera, mesh)
@@ -77,6 +77,15 @@ function init() {
         1000
     );
 
+    const loaderSkybox = new THREE.CubeTextureLoader();
+    scene.background = loaderSkybox.load([
+        'zombieSkybox1.png',
+        'zombieSkybox1.png',
+        'zombieSkybox1.png',
+        'zombieSkybox1.png',
+        'zombieSkybox1.png',
+        'zombieSkybox1.png'
+    ]);
 
 
     //set up loading screen scene
