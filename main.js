@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 
-
 var scene, camera, renderer, mesh;
 var meshFloor;
 
@@ -41,29 +40,33 @@ var models = {
         obj: "Models/OBJ format/tent_detailedOpen.obj",
         mtl: "Models/OBJ format/tent_detailedOpen.mtl",
         mesh: null,
-        bbox: null
+
     },
     campfire_stones: {
         obj: "Models/OBJ format/campfire_stones.obj",
         mtl: "Models/OBJ format/campfire_stones.mtl",
         mesh: null,
-        bbox: null
+
     },
     cliff_block_rock: {
         obj: "Models/OBJ format/cliff_block_rock.obj",
         mtl: "Models/OBJ format/cliff_block_rock.mtl",
         mesh: null,
-        bbox: null
+
     },
     pistol: {
         obj: "Models/OBJ weapons/uziLong.obj",
         mtl: "Models/OBJ weapons/uziLong.mtl",
         mesh: null,
-        bbox: null
+
     }
 }
 //Meshes object to index and will store every object appears in the scene indexed by a key
 var meshes = {}
+
+// BoundingBoxes object to store the bounding boxes of the meshes
+var boundingBoxes = {};
+
 
 //Bullets array to hold the bullets
 var bullets = [];
@@ -196,11 +199,7 @@ function init() {
                         }
                     });
                     models[key].mesh = mesh; // Store the loaded mesh in the models object at the corresponding key
-                    // Scale the model here if needed
-                    //models[key].mesh.scale.set(5, 5, 5);
-                    //scene.add(models[key].mesh);
-                    //models[key].bbox = new THREE.Box3().setFromObject(mesh); //TRYING TO CREATE BOUNDING BOX FOR THE MESHES TO BE HITTED
-                    //console.log(key, models[key].bbox); // Debugging statement to check bbox initialization
+                    console.log(`Loaded mesh for ${key}`);
                 });
             });
 
@@ -228,30 +227,21 @@ function init() {
 //function to trigger when all resources are loaded
 function onResourcesLoaded(){
 
-    function setManualBoundingBox(min, max) {
-        return new THREE.Box3(min, max);
-    }
-    function addBoundingBox(mesh, scale, position, key, manualBBox) {
+    function addBoundingBox(mesh, scale, position, key) {
         mesh.position.copy(position);
         mesh.scale.copy(scale);
-        scene.add(mesh);
         mesh.updateMatrixWorld(true);
 
-        const boxHelper = new THREE.BoxHelper(mesh, 0xff0000); // Create a BoxHelper
+        const boxHelper = new THREE.BoxHelper(mesh, 0xff0000);
+
+        //CHECK BOUNDING BOXES
         scene.add(boxHelper);
 
-        // Use the manual bounding box if provided
-        if (manualBBox) {
-            models[key].bbox = manualBBox;
-        } else {
-            // Otherwise, calculate the bounding box from the mesh
-            // Update the bounding box for collision detection
-            models[key].bbox = new THREE.Box3().setFromObject(mesh);
-        }
+        boundingBoxes[key] = new THREE.Box3().setFromObject(mesh);
 
-
-        console.log(key + ' BBox:', models[key].bbox); // Debugging statement for bounding box
+        console.log(`${key} BBox:`, boundingBoxes[key]);
     }
+
 
     // Clone models into meshes.
     meshes["tent1"] = models.tent.mesh.clone();
@@ -262,38 +252,22 @@ function onResourcesLoaded(){
     meshes["cliff_block_rock2"] = models.cliff_block_rock.mesh.clone();
 
 
-    // Reposition individual meshes, then add meshes to scene
-    const tent1Position = new THREE.Vector3(0, 0, 4);
-    const tent1Scale = new THREE.Vector3(5, 5, 5);
-
-    // Define the manual bounding box dimensions (adjust as needed)
-    const tent1Min = new THREE.Vector3(-5, -2.5, -5);
-    const tent1Max = new THREE.Vector3(5, 2.5, 5);
-    const tent1BBox = setManualBoundingBox(tent1Min, tent1Max);
-
-    addBoundingBox(meshes["tent1"], tent1Scale, tent1Position, 'tent', tent1BBox);
 
 
+    addBoundingBox(meshes["tent1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(0, 0, 4), 'tent1');
+    scene.add(meshes["tent1"]);
 
-    addBoundingBox(meshes["tent2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-5, 0, 4), 'tent');
-    //meshes["tent2"].bbox.expandByVector(1, 1, 1);
+    addBoundingBox(meshes["tent2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-5, 0, 4), 'tent2');
+    scene.add(meshes["tent2"]);
 
-
+    addBoundingBox(meshes["campfire1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-1, 0, 1), 'campfire1');
     scene.add(meshes["campfire1"]);
+
+    addBoundingBox(meshes["campfire2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-1, 0, 1), 'campfire1');
     scene.add(meshes["campfire2"]);
-    meshes["campfire1"].position.set(-1, 0, 1);
-    models.tent.bbox.setFromObject(meshes["campfire1"]);
-    meshes["campfire2"].position.set(-5, 0, 1);
-    models.tent.bbox.setFromObject(meshes["campfire2"]);
 
-    /*meshes["cliff_block_rock"].position.set(-11, -1, 1);
-    meshes["cliff_block_rock"].rotation.set(0, Math.PI, 0); // Rotate it to face the other way.
-    //scene.add(meshes["cliff_block_rock"]);
-    models.tent.bbox.setFromObject(meshes["cliff_block_rock"]);*/
     addBoundingBox(meshes["cliff_block_rock"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-11, -1, 1), 'cliff_block_rock');
-    //addBoundingBox(meshes["cliff_block_rock2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-5, -1, -1), 'cliff_block_rock');
-
-
+    scene.add(meshes["cliff_block_rock"]);
 
     //player weapon
     meshes["playerWeapon"] = models.pistol.mesh.clone();
@@ -376,8 +350,9 @@ function animate() {
 
 
         // Check for bullet collisions with models
-        for (var key in models) {
-            if (models[key].bbox !== null) {
+        for (var key in boundingBoxes) {
+            console.log(boundingBoxes[key] ,key);
+            if (boundingBoxes[key] !== null) {
                 var bulletBox = new THREE.Box3().setFromObject(bullets[index]);
 
                 //console.log('Checking collision for:', key); // Add key to debug statement
@@ -385,10 +360,11 @@ function animate() {
                // console.log('Model Box:', models[key].bbox); // Debugging statement for model box
 
 
-                if (bulletBox.intersectsBox(models[key].bbox)) {
+                if (bulletBox.intersectsBox(boundingBoxes[key])){
                     console.log('Hit:', key);
                     bullets[index].alive = false;
-                    //scene.remove(bullets[index]);
+                    scene.remove(bullets[index]);
+                    //scene.remove(meshes[key]);
                 }
             }
         }
@@ -411,7 +387,7 @@ function animate() {
         bullet.velocity =new THREE.Vector3(
             -Math.sin(camera.rotation.y), //being 45grades to give me direction of the bullet sin of y give me direction x
             0, //we have no vertical velocity
-            Math.cos(camera.rotation.y) - 0.9 //being 45grades to give me direction of the bullet cos of y give me direction z
+            Math.cos(camera.rotation.y)  //being 45grades to give me direction of the bullet cos of y give me direction z
         )
         bullet.alive = true;
         setTimeout(function(){ //timeToLive of the bullets to clear up the scene

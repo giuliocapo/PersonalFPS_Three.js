@@ -137,3 +137,8 @@ Additionally, player.canShoot is decremented each frame until it reaches 0, allo
 
 9.
 I added the background skyBoxed
+
+10.
+
+added bounding box logic to implement the hitBox. I created a structure object to maintain the bounding boxes that are created
+when we add to the scene the cloned meshes after scaled so also the bounding box is scaled.
