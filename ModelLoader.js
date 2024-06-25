@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
+import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
+import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
+
 
 //Load Models
 //I wrap everything in the for loop in a function to stop the key variable from changing during the loading process
@@ -44,4 +47,64 @@ export function addBoundingBox(mesh, scale, position, key, scene, boundingBoxes)
 
     boundingBoxes[key] = new THREE.Box3().setFromObject(mesh);
     console.log(`${key} BBox:`, boundingBoxes[key]);
+}
+export function LoadAnimatedModel(scene, camera, mixers) {
+    const loader = new FBXLoader();
+    loader.setPath('./resources/zombie/');
+    loader.load('mremireh_o_desbiens.fbx', (fbx) => {
+        fbx.scale.setScalar(0.1);
+        fbx.traverse(c => {
+            c.castShadow = true;
+        });
+
+        const params = {
+            target: fbx,
+            camera: camera,
+        };
+        const controls = new BasicCharacterControls(params); // Assicurati che BasicCharacterControls sia disponibile
+
+        const animLoader = new FBXLoader();
+        animLoader.setPath('./resources/zombie/');
+        animLoader.load('walk.fbx', (anim) => {
+            const mixer = new THREE.AnimationMixer(fbx);
+            mixers.push(mixer);
+            const idle = mixer.clipAction(anim.animations[0]);
+            idle.play();
+        });
+
+        scene.add(fbx);
+    });
+}
+
+export function LoadAnimatedModelAndPlay(scene, mixers, path, modelFile, animFile, offset) {
+    const loader = new FBXLoader();
+    loader.setPath(path);
+    loader.load(modelFile, (fbx) => {
+        fbx.scale.setScalar(0.1);
+        fbx.traverse(c => {
+            c.castShadow = true;
+        });
+        fbx.position.copy(offset);
+
+        const animLoader = new FBXLoader();
+        animLoader.setPath(path);
+        animLoader.load(animFile, (anim) => {
+            const mixer = new THREE.AnimationMixer(fbx);
+            mixers.push(mixer);
+            const idle = mixer.clipAction(anim.animations[0]);
+            idle.play();
+        });
+
+        scene.add(fbx);
+    });
+}
+
+export function LoadModel(scene) {
+    const loader = new GLTFLoader();
+    loader.load('./resources/thing.glb', (gltf) => {
+        gltf.scene.traverse(c => {
+            c.castShadow = true;
+        });
+        scene.add(gltf.scene);
+    });
 }

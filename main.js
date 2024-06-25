@@ -3,6 +3,7 @@ import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 import {addBoundingBox, loadModels} from "./ModelLoader";
 import {LightFarm} from "./LightFarm";
+import {Sky} from "three/addons/objects/Sky.js";
 
 var scene, camera, renderer, mesh;
 var meshFloor;
@@ -84,6 +85,20 @@ function init() {
         1000
     );
 
+    //Sky
+    const sky = new Sky();
+    sky.scale.set(100, 1000, 100);
+    //scene.add(sky); //add sky if you want it
+
+    sky.material.uniforms['turbidity'].value = 10;
+    sky.material.uniforms['rayleigh'].value = 3;
+    sky.material.uniforms['mieCoefficient'].value = 0.1;
+    sky.material.uniforms['mieDirectionalG'].value = 0.95;
+    sky.material. uniforms['sunPosition'].value.set(0.3,-0.038, -0.95)
+
+    //Fog
+    scene.fog = new THREE.FogExp2('0xff0000', 0.05);
+
     const loaderSkybox = new THREE.CubeTextureLoader();
     scene.background = loaderSkybox.load([
         'zombieSkybox1.png',
@@ -138,7 +153,7 @@ function init() {
 
     meshFloor = new THREE.Mesh(
         new THREE.PlaneGeometry(100,100., 100,100), //more segments = more polygons, which results in more detail.
-        new THREE.MeshPhongMaterial( {color: 0xffffff, wireframe: USE_WIREFRAME}), //wireframe is useful to see the true geometry of things.
+        new THREE.MeshPhongMaterial( {color: 0x8b0000, wireframe: USE_WIREFRAME}), //wireframe is useful to see the true geometry of things.
     )
     meshFloor.rotation.x -= Math.PI/2; //rotate the mesh of 90grades x.
     meshFloor.receiveShadow = true; //tell the mesh to receive, the floor doesn't need to cast shadow.
