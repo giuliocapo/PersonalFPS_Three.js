@@ -136,3 +136,4 @@ If the bullet is alive, its position is updated by adding its velocity.
 Additionally, player.canShoot is decremented each frame until it reaches 0, allowing the player to shoot again after 20 frames.
 
 9.
+I added the background skyBoxed
