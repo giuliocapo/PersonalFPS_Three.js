@@ -5,7 +5,7 @@ import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 //Load Models
 //I wrap everything in the for loop in a function to stop the key variable from changing during the loading process
 //first will do "myFirstObj" the loop then changes to "secondObj" the first one when finished put the mesh into _key and you can end up with a mesh loaded in the wrong place
-export function loadModels(models, loadingManager, scene, meshes, boundingBoxes) {
+export function loadModels(models, loadingManager) {
     for (var _key in models) { // Iterate through all keys (tent, campfire_stones, cliff_block_rock) in the models object
         (function (key) { // Create a closure to maintain the value of 'key' for each iteration asynchronous of the loop
             //console.log(_key); first time is tent

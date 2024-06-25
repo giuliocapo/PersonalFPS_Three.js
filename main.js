@@ -2,14 +2,13 @@ import * as THREE from 'three';
 import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 import {addBoundingBox, loadModels} from "./ModelLoader";
+import {LightFarm} from "./LightFarm";
 
 var scene, camera, renderer, mesh;
 var meshFloor;
 
 var box, boxTexture, boxNormalMap, boxBumpMap;
 
-var ambientLight;
-var light;
 
 var keyboard;
 keyboard = {};
@@ -138,7 +137,7 @@ function init() {
     scene.add(mesh);
 
     meshFloor = new THREE.Mesh(
-        new THREE.PlaneGeometry(30,30., 30,30), //more segments = more polygons, which results in more detail.
+        new THREE.PlaneGeometry(100,100., 100,100), //more segments = more polygons, which results in more detail.
         new THREE.MeshPhongMaterial( {color: 0xffffff, wireframe: USE_WIREFRAME}), //wireframe is useful to see the true geometry of things.
     )
     meshFloor.rotation.x -= Math.PI/2; //rotate the mesh of 90grades x.
@@ -146,16 +145,15 @@ function init() {
     scene.add( meshFloor );
 
     // LIGHTS
-    ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
-    scene.add(ambientLight);
+    const lightFarm = new LightFarm(scene);
+    //add light with lightFarm
+    lightFarm.addAmbientLight(0xffffff, 0.2);
+    lightFarm.addPointLight(0xffffff, 100, 18, { x: -3, y: 6, z: -3 });
+    lightFarm.addPointLight(0xffffff, 100, 18, { x: 40, y: 6, z: 40 });
+    lightFarm.addPointLight(0xffffff, 100, 18, { x: -40, y: 6, z: 40 });
+    lightFarm.addPointLight(0xffffff, 100, 18, { x: 40, y: 6, z: -40 });
+    lightFarm.addPointLight(0xffffff, 100, 18, { x: -40, y: 6, z: -40 });
 
-    light = new THREE.PointLight(0xffffff, 100, 18);
-    light.position.set(-3,6,-3);
-    light.castShadow = true;
-    // Will not light anything closer than 0.1 units or further than 25 units
-    light.shadow.camera.near = 0.1;
-    light.shadow.camera.far = 25;
-    scene.add(light);
 
     //BOX
     boxTexture =  textureLoader.load("./textures/crate0/crate0_diffuse.png");
@@ -178,7 +176,7 @@ function init() {
 
 
     //load models
-    loadModels(models, loadingManager, scene, meshes, boundingBoxes);
+    loadModels(models, loadingManager);
 
     // Move the camera to 0,player.height,-5 (the Y axis is "up")
     camera.position.set(0, player.height, -5);
