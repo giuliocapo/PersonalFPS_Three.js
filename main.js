@@ -1,9 +1,11 @@
 import * as THREE from 'three';
 import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
-import {addBoundingBox, loadModels} from "./ModelLoader";
+import {addBoundingBox, LoadAnimatedModel, LoadModel, loadModels} from "./ModelLoader";
 import {LightFarm} from "./LightFarm";
 import {Sky} from "three/addons/objects/Sky.js";
+import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
+import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 
 var scene, camera, renderer, mesh;
 var meshFloor;
@@ -13,6 +15,8 @@ var box, boxTexture, boxNormalMap, boxBumpMap;
 
 var keyboard;
 keyboard = {};
+
+var mixers = [];
 
 //create a player object to hold details about the 'player', such as height and move speed
 var player = { height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 };
@@ -212,6 +216,7 @@ function init() {
 
 
 
+
 //function to trigger when all resources are loaded
 function onResourcesLoaded(){
 
@@ -245,7 +250,61 @@ function onResourcesLoaded(){
     meshes["playerWeapon"].scale.set(10, 10, 10);
 
     //console.log(meshes); here you can see how important asynchronous loop is because if you stamp you see that there are not ordered as they have been put in the closed loop "_key"
+
+    // Carica il modello animato
+    //LoadAnimatedModel(scene, camera, mixers, './resources/zombie/', 'mremireh_o_desbiens.fbx');
+    function LoadAnimatedModel() {
+        const loader = new FBXLoader();
+        loader.setPath('zombie/');
+        loader.load('mremireh_o_desbiens.fbx', (fbx) => {
+            fbx.scale.setScalar(0.02);
+            fbx.traverse(c => {
+                c.castShadow = true;
+            });
+
+            /*const params = {
+                target: fbx,
+                camera: camera,
+            }*/
+            //this._controls = new BasicCharacterControls(params);
+
+            const anim = new FBXLoader();
+            anim.setPath('zombie/');
+            anim.load('walk.fbx', (anim) => {
+                const m = new THREE.AnimationMixer(fbx);
+                mixers.push(m);
+                const idle = m.clipAction(anim.animations[0]);
+                idle.play();
+            });
+            scene.add(fbx);
+            meshes['zombie'] = fbx;
+            fbx.rotation.set(0, Math.PI, 0);
+        });
+    }
+    LoadAnimatedModel();
+
+    function LoadModel() {
+        const loader = new GLTFLoader();
+        loader.load('thing.glb', (gltf) => {
+            gltf.scene.traverse(c => {
+                c.castShadow = true;
+            });
+            scene.add(gltf.scene);
+            gltf.scene.position.set(0,12,4);
+        });
+    }
+
+    LoadModel();
+    //Carica un altro modello animato e avvia l'animazione
+    //LoadAnimatedModelAndPlay(scene, mixers, './resources/zombie/', 'mremireh_o_desbiens.fbx', 'walk.fbx', new THREE.Vector3(0, 0, 0));
+
+    //Carica un modello statico
+    //LoadModel(scene);
+
 }
+
+const clock = new THREE.Clock();
+
 function animate() {
 
     if ( RESOURCES_LOADED === false){
@@ -366,7 +425,7 @@ function animate() {
 
         bullets.push(bullet);
         scene.add(bullet);
-        player.canShoot = 160; //1 bullet per 20 frames
+        player.canShoot = 40; //1 bullet per 20 frames
     }
     if (player.canShoot > 0) {
         player.canShoot -= 1;
@@ -384,6 +443,18 @@ function animate() {
         camera.rotation.y - Math.PI,
         camera.rotation.z
     );
+
+    const delta = clock.getDelta();
+    mixers.forEach(mixer => mixer.update(delta));
+
+    // Move zombie towards the camera
+    if (meshes["zombie"]) {
+        const direction = new THREE.Vector3();
+        direction.subVectors(camera.position , meshes["zombie"].position).normalize(); // Calculate direction towards the camera
+        const speed = 3; // Speed of the zombie
+        meshes["zombie"].position.addScaledVector(direction, speed * delta); // Update zombie position
+    }
+
 
     // Draw the scene from the perspective of the camera.
     renderer.render(scene, camera);

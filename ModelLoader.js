@@ -48,23 +48,17 @@ export function addBoundingBox(mesh, scale, position, key, scene, boundingBoxes)
     boundingBoxes[key] = new THREE.Box3().setFromObject(mesh);
     console.log(`${key} BBox:`, boundingBoxes[key]);
 }
-export function LoadAnimatedModel(scene, camera, mixers) {
+export function LoadAnimatedModel(scene, camera, mixers, path, Fbx) {
     const loader = new FBXLoader();
-    loader.setPath('./resources/zombie/');
-    loader.load('mremireh_o_desbiens.fbx', (fbx) => {
+    loader.setPath(path);
+    loader.load(Fbx, (fbx) => {
         fbx.scale.setScalar(0.1);
         fbx.traverse(c => {
             c.castShadow = true;
         });
 
-        const params = {
-            target: fbx,
-            camera: camera,
-        };
-        const controls = new BasicCharacterControls(params); // Assicurati che BasicCharacterControls sia disponibile
-
         const animLoader = new FBXLoader();
-        animLoader.setPath('./resources/zombie/');
+        animLoader.setPath(path);
         animLoader.load('walk.fbx', (anim) => {
             const mixer = new THREE.AnimationMixer(fbx);
             mixers.push(mixer);
@@ -76,7 +70,7 @@ export function LoadAnimatedModel(scene, camera, mixers) {
     });
 }
 
-export function LoadAnimatedModelAndPlay(scene, mixers, path, modelFile, animFile, offset) {
+/*export function LoadAnimatedModelAndPlay(scene, mixers, path, modelFile, animFile, offset) {
     const loader = new FBXLoader();
     loader.setPath(path);
     loader.load(modelFile, (fbx) => {
@@ -98,10 +92,10 @@ export function LoadAnimatedModelAndPlay(scene, mixers, path, modelFile, animFil
         scene.add(fbx);
     });
 }
-
+*/
 export function LoadModel(scene) {
     const loader = new GLTFLoader();
-    loader.load('./resources/thing.glb', (gltf) => {
+    loader.load('thing.glb', (gltf) => {
         gltf.scene.traverse(c => {
             c.castShadow = true;
         });
