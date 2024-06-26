@@ -48,27 +48,6 @@ export function addBoundingBox(mesh, scale, position, key, scene, boundingBoxes)
     boundingBoxes[key] = new THREE.Box3().setFromObject(mesh);
     console.log(`${key} BBox:`, boundingBoxes[key]);
 }
-export function LoadAnimatedModel(scene, camera, mixers, path, Fbx) {
-    const loader = new FBXLoader();
-    loader.setPath(path);
-    loader.load(Fbx, (fbx) => {
-        fbx.scale.setScalar(0.1);
-        fbx.traverse(c => {
-            c.castShadow = true;
-        });
-
-        const animLoader = new FBXLoader();
-        animLoader.setPath(path);
-        animLoader.load('walk.fbx', (anim) => {
-            const mixer = new THREE.AnimationMixer(fbx);
-            mixers.push(mixer);
-            const idle = mixer.clipAction(anim.animations[0]);
-            idle.play();
-        });
-
-        scene.add(fbx);
-    });
-}
 
 /*export function LoadAnimatedModelAndPlay(scene, mixers, path, modelFile, animFile, offset) {
     const loader = new FBXLoader();
@@ -93,6 +72,33 @@ export function LoadAnimatedModel(scene, camera, mixers, path, Fbx) {
     });
 }
 */
+
+export function LoadAnimatedModel(path, mesh, anime, key, mixers, scene, meshes) {
+    return new Promise((resolve, reject) => {
+        const loader = new FBXLoader();
+        loader.setPath(path);
+        loader.load(mesh, (fbx) => {
+            fbx.scale.setScalar(0.02);
+            fbx.traverse(c => {
+                c.castShadow = true;
+            });
+
+            const animLoader = new FBXLoader();
+            animLoader.setPath(path);
+            animLoader.load(anime, (anim) => {
+                const mixer = new THREE.AnimationMixer(fbx);
+                mixers.push(mixer);
+                const action = mixer.clipAction(anim.animations[0]);
+                action.play();
+                resolve(fbx); //resolve the promise after the fbx is loaded
+            }, undefined, reject); //manage error for the animation loading, undefined is the third onLoad variable, reject is for OnError
+
+            scene.add(fbx);
+            meshes[key] = fbx;
+        }, undefined, reject); //manage error for the model loading, undefined is the third onLoad variable, reject is for OnError
+    });
+}
+
 export function LoadModel(scene) {
     const loader = new GLTFLoader();
     loader.load('thing.glb', (gltf) => {

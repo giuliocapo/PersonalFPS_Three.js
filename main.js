@@ -1,10 +1,8 @@
 import * as THREE from 'three';
-import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
-import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
-import {addBoundingBox, LoadAnimatedModel, LoadModel, loadModels} from "./ModelLoader";
+
+import {addBoundingBox, LoadAnimatedModel, loadModels} from "./ModelLoader";
 import {LightFarm} from "./LightFarm";
 import {Sky} from "three/addons/objects/Sky.js";
-import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 
 var scene, camera, renderer, mesh;
@@ -28,7 +26,7 @@ var loadingScreen = {
     camera: new THREE.PerspectiveCamera(90, window.innerWidth/window.innerHeight, 0.1, 100),
     box: new THREE.Mesh(
         new THREE.BoxGeometry(0.5, 0.5, 0.5),
-        new THREE.MeshBasicMaterial({color: 0x4444ff})
+        new THREE.MeshBasicMaterial({color: 0x4444ff}),
     )
 }
 //loading animation variables
@@ -166,7 +164,7 @@ function init() {
     // LIGHTS
     const lightFarm = new LightFarm(scene);
     //add light with lightFarm
-    lightFarm.addAmbientLight(0xffffff, 0.2);
+    lightFarm.addAmbientLight(0x404040, 0.2);
     lightFarm.addPointLight(0xffffff, 100, 18, { x: -3, y: 6, z: -3 });
     lightFarm.addPointLight(0xffffff, 100, 18, { x: 40, y: 6, z: 40 });
     lightFarm.addPointLight(0xffffff, 100, 18, { x: -40, y: 6, z: 40 });
@@ -227,6 +225,10 @@ function onResourcesLoaded(){
     meshes["campfire2"] = models.campfire_stones.mesh.clone();
     meshes["cliff_block_rock"] = models.cliff_block_rock.mesh.clone();
     meshes["cliff_block_rock2"] = models.cliff_block_rock.mesh.clone();
+    meshes["cliff_block_rock3"] = models.cliff_block_rock.mesh.clone();
+    meshes["cliff_block_rock4"] = models.cliff_block_rock.mesh.clone();
+    meshes["cliff_block_rock5"] = models.cliff_block_rock.mesh.clone();
+    meshes["cliff_block_rock6"] = models.cliff_block_rock.mesh.clone();
 
     // Add bounding boxes and add to scene
     addBoundingBox(meshes["tent1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(0, 0, 4), 'tent1', scene, boundingBoxes);
@@ -243,6 +245,25 @@ function onResourcesLoaded(){
 
     addBoundingBox(meshes["cliff_block_rock"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-11, -1, 1), 'cliff_block_rock', scene, boundingBoxes);
     scene.add(meshes["cliff_block_rock"]);
+
+    addBoundingBox(meshes["cliff_block_rock"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-11, -1, 1), 'cliff_block_rock', scene, boundingBoxes);
+    scene.add(meshes["cliff_block_rock"]);
+
+    //TRYING CASUAL CREATION OF MAP
+    function getRandomPosition(maxX, maxY, maxZ) {
+        return new THREE.Vector3(
+            Math.random() * maxX - maxX / 2, //casual x starting from the center
+            Math.random() * maxY - maxY / 2, //casual y starting from the center
+            Math.random() * maxZ - maxZ / 2  //casual z starting from the center
+        );
+    }
+    for (let i = 2; i <= 6; i++) {
+        const meshName = `cliff_block_rock${i}`;
+        const position = getRandomPosition(100, 0, 100);
+        addBoundingBox(meshes[`cliff_block_rock${i}`], new THREE.Vector3(5, 5, 5), position, `cliff_block_rock${i}`, scene, boundingBoxes);
+        scene.add(meshes[`cliff_block_rock${i}`]);
+    }
+
     //player weapon
     meshes["playerWeapon"] = models.pistol.mesh.clone();
     meshes["playerWeapon"].position.set(0,1,0);
@@ -253,35 +274,18 @@ function onResourcesLoaded(){
 
     // Carica il modello animato
     //LoadAnimatedModel(scene, camera, mixers, './resources/zombie/', 'mremireh_o_desbiens.fbx');
-    function LoadAnimatedModel() {
-        const loader = new FBXLoader();
-        loader.setPath('zombie/');
-        loader.load('mremireh_o_desbiens.fbx', (fbx) => {
-            fbx.scale.setScalar(0.02);
-            fbx.traverse(c => {
-                c.castShadow = true;
-            });
-
-            /*const params = {
-                target: fbx,
-                camera: camera,
-            }*/
-            //this._controls = new BasicCharacterControls(params);
-
-            const anim = new FBXLoader();
-            anim.setPath('zombie/');
-            anim.load('walk.fbx', (anim) => {
-                const m = new THREE.AnimationMixer(fbx);
-                mixers.push(m);
-                const idle = m.clipAction(anim.animations[0]);
-                idle.play();
-            });
-            scene.add(fbx);
-            meshes['zombie'] = fbx;
-            fbx.rotation.set(0, Math.PI, 0);
+    LoadAnimatedModel('zombie/',
+                    'mremireh_o_desbiens.fbx',
+                    'walk.fbx',
+                    'zombie', mixers, scene, meshes)
+        .then(() => {
+            meshes['zombie'].rotation.set(0, Math.PI, 0);
+        })
+        .catch(error => {
+            console.error('Error loading model or animation:', error);
         });
-    }
-    LoadAnimatedModel();
+
+
 
     function LoadModel() {
         const loader = new GLTFLoader();
@@ -378,7 +382,7 @@ function animate() {
 
         // Check for bullet collisions with models
         for (var key in boundingBoxes) {
-            console.log(boundingBoxes[key] ,key);
+            //console.log(boundingBoxes[key] ,key);
             if (boundingBoxes[key] !== null) {
                 var bulletBox = new THREE.Box3().setFromObject(bullets[index]);
 
@@ -450,9 +454,17 @@ function animate() {
     // Move zombie towards the camera
     if (meshes["zombie"]) {
         const direction = new THREE.Vector3();
-        direction.subVectors(camera.position , meshes["zombie"].position).normalize(); // Calculate direction towards the camera
-        const speed = 3; // Speed of the zombie
-        meshes["zombie"].position.addScaledVector(direction, speed * delta); // Update zombie position
+        direction.subVectors(camera.position, meshes["zombie"].position).normalize(); // Calcola la direzione verso la telecamera
+
+        //Setup zombies' velocity
+        const speed = 0.1;
+
+        //Update the position of the zombie only on X and Z to let him walk on the Y = 0 (ground)
+        meshes["zombie"].position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
+
+        //Calculate the rotation to let him look to the camera (player)
+        const lookAtPosition = new THREE.Vector3(camera.position.x, meshes["zombie"].position.y, camera.position.z);
+        meshes["zombie"].lookAt(lookAtPosition);
     }
 
 
