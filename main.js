@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import {addBoundingBox, LoadAnimatedModel, loadModels} from "./ModelLoader";
+import {addBoundingBox, addCapsuleBoundingBox, LoadAnimatedModel, LoadModel, loadModels} from "./ModelLoader";
 import {LightFarm} from "./LightFarm";
 import {Sky} from "three/addons/objects/Sky.js";
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
@@ -71,6 +71,9 @@ var meshes = {}
 var boundingBoxes = {};
 
 
+// capsuleBoundingBoxes object to store the bounding boxes of the zombies
+var capsuleBoundingBoxes = {};
+
 //Bullets array to hold the bullets
 var bullets = [];
 
@@ -99,7 +102,7 @@ function init() {
     sky.material. uniforms['sunPosition'].value.set(0.3,-0.038, -0.95)
 
     //Fog
-    scene.fog = new THREE.FogExp2('0xff0000', 0.05);
+    //scene.fog = new THREE.FogExp2('0xff0000', 0.05);
 
     const loaderSkybox = new THREE.CubeTextureLoader();
     scene.background = loaderSkybox.load([
@@ -192,8 +195,33 @@ function init() {
     box.position.set(2.5, 3/2, 2.5);
 
 
-    //load models
+    //LOAD MODELS
     loadModels(models, loadingManager);
+
+    // Carica il modello animato
+    LoadAnimatedModel('zombie/',
+        'mremireh_o_desbiens.fbx',
+        'walk.fbx',
+        'zombie', mixers, scene, meshes, loadingManager)
+        .then(() => {
+            meshes['zombie'].rotation.set(0, Math.PI, 0);
+            //addBoundingBox(meshes['zombie'], new THREE.Vector3(0.02, 0.02, 0.02), new THREE.Vector3(30, 0, -10), 'zombie', scene, boundingBoxes );
+            addCapsuleBoundingBox(meshes['zombie'], new THREE.Vector3(0.02, 0.02, 0.02), new THREE.Vector3(6, 0, 0), 'zombie', scene, capsuleBoundingBoxes);
+
+        })
+        .catch(error => {
+            console.error('Error loading model or animation:', error);
+        });
+
+    LoadModel(scene, loadingManager);
+    //LoadModel();
+    //Carica un altro modello animato e avvia l'animazione
+    //LoadAnimatedModelAndPlay(scene, mixers, './resources/zombie/', 'mremireh_o_desbiens.fbx', 'walk.fbx', new THREE.Vector3(0, 0, 0));
+
+    //Carica un modello statico
+
+
+
 
     // Move the camera to 0,player.height,-5 (the Y axis is "up")
     camera.position.set(0, player.height, -5);
@@ -272,38 +300,6 @@ function onResourcesLoaded(){
 
     //console.log(meshes); here you can see how important asynchronous loop is because if you stamp you see that there are not ordered as they have been put in the closed loop "_key"
 
-    // Carica il modello animato
-    //LoadAnimatedModel(scene, camera, mixers, './resources/zombie/', 'mremireh_o_desbiens.fbx');
-    LoadAnimatedModel('zombie/',
-                    'mremireh_o_desbiens.fbx',
-                    'walk.fbx',
-                    'zombie', mixers, scene, meshes)
-        .then(() => {
-            meshes['zombie'].rotation.set(0, Math.PI, 0);
-        })
-        .catch(error => {
-            console.error('Error loading model or animation:', error);
-        });
-
-
-
-    function LoadModel() {
-        const loader = new GLTFLoader();
-        loader.load('thing.glb', (gltf) => {
-            gltf.scene.traverse(c => {
-                c.castShadow = true;
-            });
-            scene.add(gltf.scene);
-            gltf.scene.position.set(0,12,4);
-        });
-    }
-
-    LoadModel();
-    //Carica un altro modello animato e avvia l'animazione
-    //LoadAnimatedModelAndPlay(scene, mixers, './resources/zombie/', 'mremireh_o_desbiens.fbx', 'walk.fbx', new THREE.Vector3(0, 0, 0));
-
-    //Carica un modello statico
-    //LoadModel(scene);
 
 }
 
@@ -399,7 +395,24 @@ function animate() {
                 }
             }
         }
+        /*for (var key in boundingBoxes) {
+            //console.log(boundingBoxes[key] ,key);
+            if (boundingBoxes[key] !== null) {
+                var bulletBox = new THREE.Box3().setFromObject(bullets[index]);
 
+                //console.log('Checking collision for:', key); // Add key to debug statement
+                //console.log('Bullet Box:', bulletBox); // Debugging statement for bullet box
+                // console.log('Model Box:', models[key].bbox); // Debugging statement for model box
+
+
+                if (bulletBox.intersectsBox(boundingBoxes[key])){
+                    console.log('Hit:', key);
+                    bullets[index].alive = false;
+                    scene.remove(bullets[index]);
+                    //scene.remove(meshes[key]);
+                }
+            }
+        }*/
 
     }
 

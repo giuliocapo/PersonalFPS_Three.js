@@ -3,6 +3,7 @@ import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
+import GUI from "three/examples/jsm/libs/lil-gui.module.min";
 
 
 //Load Models
@@ -49,6 +50,84 @@ export function addBoundingBox(mesh, scale, position, key, scene, boundingBoxes)
     console.log(`${key} BBox:`, boundingBoxes[key]);
 }
 
+/*add an invisible capsule bounding box around a given mesh for collision detection. I utilized the capsule geometry and using maths from the scaled mesh"zombie"
+I've created a capsule similar to the zombie, we can also give opacity or not to see that.
+*/
+export function addCapsuleBoundingBox(mesh, scale, position, key, scene, capsuleBoundingBoxes) {
+    //Position and scale the original model
+    mesh.position.copy(position);
+    mesh.scale.copy(scale);
+    mesh.updateMatrixWorld(true);
+
+    //Calculate the mesh dimensions
+    const box = new THREE.Box3().setFromObject(mesh);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+
+    //Create a capsule geometry with the calculated dimensions
+    const capsuleRadius = Math.min(size.x, size.z) / 2; //Capsule radius based on the smaller dimension between x and z
+    const capsuleHeight = size.y - capsuleRadius * 2; //Height of the central cylinder
+    const capsuleGeometry = new THREE.CapsuleGeometry(capsuleRadius, capsuleHeight, 4, 8);
+
+    //Create a mesh for the capsule
+    const capsuleMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true,  opacity: 1, transparent: true }); //here I can change opacity to make capsule bounding visible
+    const capsuleMesh = new THREE.Mesh(capsuleGeometry, capsuleMaterial);
+
+    //Calculate the capsule position to center it relative to the model
+    const capsulePosition = new THREE.Vector3();
+    capsulePosition.copy(position);
+    capsulePosition.y += (capsuleHeight / 2 + capsuleRadius); //Adjust the position based on the capsule height
+
+    capsuleMesh.position.copy(capsulePosition);
+    scene.add(capsuleMesh);
+
+    //Add the capsule mesh to the bounding box object for future reference
+    capsuleBoundingBoxes[key] = capsuleMesh;
+    console.log(`${key} Capsule Mesh:`, capsuleBoundingBoxes[key]);
+
+    // Add GUI control for opacity
+    const gui = new GUI();
+    const capsuleFolder = gui.addFolder('Capsule');
+    capsuleFolder.add(capsuleMaterial, 'opacity', 0, 1).name('Opacity').onChange(() => {
+        capsuleMaterial.needsUpdate = true;
+    });
+    capsuleFolder.open();
+}
+export function LoadAnimatedModel(path, mesh, anime, key, mixers, scene, meshes, loadingManager) {
+    return new Promise((resolve, reject) => {
+        const loader = new FBXLoader(loadingManager);
+        loader.setPath(path);
+        loader.load(mesh, (fbx) => {
+            //fbx.scale.setScalar(0.02); //now im doing it when i add boundingBoxes with the function boundingBdoxes above
+            fbx.traverse(c => {
+                c.castShadow = true;
+            });
+
+            const animLoader = new FBXLoader(loadingManager);
+            animLoader.setPath(path);
+            animLoader.load(anime, (anim) => {
+                const mixer = new THREE.AnimationMixer(fbx);
+                mixers.push(mixer);
+                const action = mixer.clipAction(anim.animations[0]);
+                action.play();
+                resolve(fbx); //resolve the promise after the fbx is loaded
+            }, undefined, reject); //manage error for the animation loading, undefined is the third onLoad variable, reject is for OnError
+
+            scene.add(fbx);
+            meshes[key] = fbx;
+        }, undefined, reject); //manage error for the model loading, undefined is the third onLoad variable, reject is for OnError
+    });
+}
+
+export function LoadModel(scene, loadingManager) {
+    const loader = new GLTFLoader(loadingManager);
+    loader.load('thing.glb', (gltf) => {
+        gltf.scene.traverse(c => {
+            c.castShadow = true;
+        });
+        scene.add(gltf.scene);
+    });
+}
 /*export function LoadAnimatedModelAndPlay(scene, mixers, path, modelFile, animFile, offset) {
     const loader = new FBXLoader();
     loader.setPath(path);
@@ -72,39 +151,3 @@ export function addBoundingBox(mesh, scale, position, key, scene, boundingBoxes)
     });
 }
 */
-
-export function LoadAnimatedModel(path, mesh, anime, key, mixers, scene, meshes) {
-    return new Promise((resolve, reject) => {
-        const loader = new FBXLoader();
-        loader.setPath(path);
-        loader.load(mesh, (fbx) => {
-            fbx.scale.setScalar(0.02);
-            fbx.traverse(c => {
-                c.castShadow = true;
-            });
-
-            const animLoader = new FBXLoader();
-            animLoader.setPath(path);
-            animLoader.load(anime, (anim) => {
-                const mixer = new THREE.AnimationMixer(fbx);
-                mixers.push(mixer);
-                const action = mixer.clipAction(anim.animations[0]);
-                action.play();
-                resolve(fbx); //resolve the promise after the fbx is loaded
-            }, undefined, reject); //manage error for the animation loading, undefined is the third onLoad variable, reject is for OnError
-
-            scene.add(fbx);
-            meshes[key] = fbx;
-        }, undefined, reject); //manage error for the model loading, undefined is the third onLoad variable, reject is for OnError
-    });
-}
-
-export function LoadModel(scene) {
-    const loader = new GLTFLoader();
-    loader.load('thing.glb', (gltf) => {
-        gltf.scene.traverse(c => {
-            c.castShadow = true;
-        });
-        scene.add(gltf.scene);
-    });
-}
