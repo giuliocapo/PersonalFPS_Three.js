@@ -102,7 +102,7 @@ function init() {
     sky.material. uniforms['sunPosition'].value.set(0.3,-0.038, -0.95)
 
     //Fog
-    //scene.fog = new THREE.FogExp2('0xff0000', 0.05);
+    //scene.fog = new THREE.FogExp2('#808080', 0.05);
 
     const loaderSkybox = new THREE.CubeTextureLoader();
     scene.background = loaderSkybox.load([
@@ -205,7 +205,6 @@ function init() {
         'zombie', mixers, scene, meshes, loadingManager)
         .then(() => {
             meshes['zombie'].rotation.set(0, Math.PI, 0);
-            //addBoundingBox(meshes['zombie'], new THREE.Vector3(0.02, 0.02, 0.02), new THREE.Vector3(30, 0, -10), 'zombie', scene, boundingBoxes );
             addCapsuleBoundingBox(meshes['zombie'], new THREE.Vector3(0.02, 0.02, 0.02), new THREE.Vector3(6, 0, 0), 'zombie', scene, capsuleBoundingBoxes);
 
         })
@@ -447,6 +446,7 @@ function animate() {
     if (player.canShoot > 0) {
         player.canShoot -= 1;
     }
+
     // position the gun in front of the camera
     var time = Date.now() * 0.0005;
 
@@ -470,10 +470,13 @@ function animate() {
         direction.subVectors(camera.position, meshes["zombie"].position).normalize(); // Calcola la direzione verso la telecamera
 
         //Setup zombies' velocity
-        const speed = 0.1;
+        const speed = 1.6;
 
         //Update the position of the zombie only on X and Z to let him walk on the Y = 0 (ground)
         meshes["zombie"].position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
+
+        //Update the position of the capsuleBoundingBox only on X and Y
+        capsuleBoundingBoxes["zombie"].position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
 
         //Calculate the rotation to let him look to the camera (player)
         const lookAtPosition = new THREE.Vector3(camera.position.x, meshes["zombie"].position.y, camera.position.z);

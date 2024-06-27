@@ -142,3 +142,28 @@ I added the background skyBoxed
 
 added bounding box logic to implement the hitBox. I created a structure object to maintain the bounding boxes that are created
 when we add to the scene the cloned meshes after scaled so also the bounding box is scaled.
+
+11.
+added an invisible capsule bounding box around a given mesh for collision detection. I utilized the capsule geometry and using maths from the scaled mesh"zombie"
+I've created a capsule similar to the zombie, we can also give opacity or not to see that.
+
+Also added the GUI addon to change opacity but i've implemented in the addcapsulboundingbox so will not work for nothing else. need to change it
+
+12. added the zombie movement logic with his capsulboundingbox:
+if (meshes["zombie"]) {
+        const direction = new THREE.Vector3();
+        direction.subVectors(camera.position, meshes["zombie"].position).normalize(); // Calcola la direzione verso la telecamera
+
+        //Setup zombies' velocity
+        const speed = 1.6;
+
+        //Update the position of the zombie only on X and Z to let him walk on the Y = 0 (ground)
+        meshes["zombie"].position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
+
+        //Update the position of the capsuleBoundingBox only on X and Y
+        capsuleBoundingBoxes["zombie"].position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
+
+        //Calculate the rotation to let him look to the camera (player)
+        const lookAtPosition = new THREE.Vector3(camera.position.x, meshes["zombie"].position.y, camera.position.z);
+        meshes["zombie"].lookAt(lookAtPosition);
+    }
