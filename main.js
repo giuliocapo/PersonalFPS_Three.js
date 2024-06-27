@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import {addBoundingBox, addCapsuleBoundingBox, LoadAnimatedModel, LoadModel, loadModels} from "./ModelLoader";
 import {LightFarm} from "./LightFarm";
 import {Sky} from "three/addons/objects/Sky.js";
-import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
+
 
 var scene, camera, renderer, mesh;
 var meshFloor;
@@ -365,7 +365,7 @@ function animate() {
     }
 
     //create a loop to update the bullets every frame
-    for(var index = 0; index<bullets.length; index+=1){
+    for(var index = 0; index < bullets.length; index += 1){
         if (bullets[index] === undefined) continue;
         if( bullets[index].alive === false){ //if the bullet is not alive, skip to the next one and remove this one
             bullets.splice(index, 1)
@@ -394,25 +394,24 @@ function animate() {
                 }
             }
         }
-        /*for (var key in boundingBoxes) {
+        for (var key in capsuleBoundingBoxes) {
             //console.log(boundingBoxes[key] ,key);
-            if (boundingBoxes[key] !== null) {
+            if (capsuleBoundingBoxes[key] !== null) {
                 var bulletBox = new THREE.Box3().setFromObject(bullets[index]);
 
                 //console.log('Checking collision for:', key); // Add key to debug statement
                 //console.log('Bullet Box:', bulletBox); // Debugging statement for bullet box
                 // console.log('Model Box:', models[key].bbox); // Debugging statement for model box
+                var capsuleBox = new THREE.Box3().setFromObject(capsuleBoundingBoxes[key]);
 
-
-                if (bulletBox.intersectsBox(boundingBoxes[key])){
+                if (bulletBox.intersectsBox(capsuleBox)){
                     console.log('Hit:', key);
                     bullets[index].alive = false;
                     scene.remove(bullets[index]);
                     //scene.remove(meshes[key]);
                 }
             }
-        }*/
-
+        }
     }
 
     //spacebar clicked to shoot, it creates a sphere geometry
