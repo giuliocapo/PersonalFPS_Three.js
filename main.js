@@ -293,7 +293,7 @@ function onResourcesLoaded(){
     for (let i = 2; i <= 6; i++) {
         const meshName = `cliff_block_rock${i}`;
         const position = getRandomPosition(100, 0, 100);
-        addBoundingBox(meshes[`cliff_block_rock${i}`], new THREE.Vector3(5, 5, 5), position, `cliff_block_rock${i}`, scene, boundingBoxes);
+        addBoundingBox(meshes[meshName], new THREE.Vector3(5, 5, 5), position, `cliff_block_rock${i}`, scene, boundingBoxes);
         scene.add(meshes[`cliff_block_rock${i}`]);
     }
 
