@@ -178,3 +178,12 @@ if (meshes["zombie"]) {
 13.
 Finally when we hit the zombie we get 'zombie' hitted. the problem to fix was to create a Three.box3 setting its dimension with
 new THREE.Box3().setFromObject(capsuleBoundingBoxes[key]); after that check the intersection.
+
+14.
+i completely changed the capsulBoundingBox structure adding a sub structure zombie that will have a capsuleboundingbox and some hp, for now the mesh is in the meshes structure with all the meshes.
+
+i also implemented the logic to kill the enemy (only the zombie for now):
+capsuleBoundingBoxes.zombie[key].hp -= 1;
+                    if ((capsuleBoundingBoxes.zombie[key].hp) === 0 ){
+                        scene.remove(meshes[key]);
+                        scene.remove(capsuleBoundingBoxes.zombie[key].cBBox);

@@ -71,8 +71,11 @@ var meshes = {}
 var boundingBoxes = {};
 
 
-// capsuleBoundingBoxes object to store the bounding boxes of the zombies
-var capsuleBoundingBoxes = {};
+// capsuleBoundingBoxes object to store the bounding boxes of the zombies and also HP!
+var capsuleBoundingBoxes = {
+    zombie: {}
+};
+
 
 //Bullets array to hold the bullets
 var bullets = [];
@@ -206,6 +209,9 @@ function init() {
         .then(() => {
             meshes['zombie'].rotation.set(0, Math.PI, 0);
             addCapsuleBoundingBox(meshes['zombie'], new THREE.Vector3(0.02, 0.02, 0.02), new THREE.Vector3(6, 0, 0), 'zombie', scene, capsuleBoundingBoxes);
+            //console.log(capsuleBoundingBoxes);
+            capsuleBoundingBoxes.zombie['zombie'].hp = 5; //added hp integer value to the sub object zombie with name zombie in this case. so now capsuleBoundingBoxes.zombie['zombie'] got mesh and hp.
+
 
         })
         .catch(error => {
@@ -394,21 +400,25 @@ function animate() {
                 }
             }
         }
-        for (var key in capsuleBoundingBoxes) {
+        for (var key in capsuleBoundingBoxes.zombie) {
             //console.log(boundingBoxes[key] ,key);
-            if (capsuleBoundingBoxes[key] !== null) {
+            if (capsuleBoundingBoxes.zombie[key] !== null) {
                 var bulletBox = new THREE.Box3().setFromObject(bullets[index]);
 
                 //console.log('Checking collision for:', key); // Add key to debug statement
                 //console.log('Bullet Box:', bulletBox); // Debugging statement for bullet box
                 // console.log('Model Box:', models[key].bbox); // Debugging statement for model box
-                var capsuleBox = new THREE.Box3().setFromObject(capsuleBoundingBoxes[key]);
+                var capsuleBox = new THREE.Box3().setFromObject(capsuleBoundingBoxes.zombie[key].cBBox);
 
                 if (bulletBox.intersectsBox(capsuleBox)){
                     console.log('Hit:', key);
                     bullets[index].alive = false;
                     scene.remove(bullets[index]);
-                    //scene.remove(meshes[key]);
+                    capsuleBoundingBoxes.zombie[key].hp -= 1;
+                    if ((capsuleBoundingBoxes.zombie[key].hp) === 0 ){
+                        scene.remove(meshes[key]);
+                        scene.remove(capsuleBoundingBoxes.zombie[key].cBBox);
+                    }
                 }
             }
         }
@@ -451,7 +461,7 @@ function animate() {
 
     meshes["playerWeapon"].position.set(
         camera.position.x - Math.sin(camera.rotation.y + Math.PI/6) * 0.75,
-        camera.position.y - 0.5 + Math.sin(time*4 + camera.position.x + camera.position.z)*0.01, //i added the camera.position.x and z to make the inhalation animation irregular when i'm moving
+        camera.position.y - 0.5 + Math.sin(time*4 + camera.position.x + camera.position.z)*0.01, //I added the camera.position.x and z to make the inhalation animation irregular when i'm moving
         camera.position.z  + Math.cos(camera.rotation.y + Math.PI/6) * 0.75
     );
     meshes["playerWeapon"].rotation.set(
@@ -475,7 +485,7 @@ function animate() {
         meshes["zombie"].position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
 
         //Update the position of the capsuleBoundingBox only on X and Y
-        capsuleBoundingBoxes["zombie"].position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
+        capsuleBoundingBoxes.zombie["zombie"].cBBox.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
 
         //Calculate the rotation to let him look to the camera (player)
         const lookAtPosition = new THREE.Vector3(camera.position.x, meshes["zombie"].position.y, camera.position.z);

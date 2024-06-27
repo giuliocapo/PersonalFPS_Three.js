@@ -76,14 +76,16 @@ export function addCapsuleBoundingBox(mesh, scale, position, key, scene, capsule
     //Calculate the capsule position to center it relative to the model
     const capsulePosition = new THREE.Vector3();
     capsulePosition.copy(position);
-    capsulePosition.y += (capsuleHeight / 2 + capsuleRadius); //Adjust the position based on the capsule height
+    capsulePosition.y += (capsuleHeight / 2 + capsuleRadius); //Adjust the position based on the capsule height unless it would be 50% under the ground in my case
 
     capsuleMesh.position.copy(capsulePosition);
     scene.add(capsuleMesh);
 
     //Add the capsule mesh to the bounding box object for future reference
-    capsuleBoundingBoxes[key] = capsuleMesh;
-    console.log(`${key} Capsule Mesh:`, capsuleBoundingBoxes[key]);
+    capsuleBoundingBoxes.zombie[key] = {
+        cBBox: capsuleMesh
+    };
+    console.log(`${key} Capsule Mesh:`, capsuleBoundingBoxes.zombie[key]);
 
     // Add GUI control for opacity
     const gui = new GUI();
