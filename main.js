@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import {addBoundingBox, addCapsuleBoundingBox, LoadAnimatedModel, LoadModel, loadModels} from "./ModelLoader";
 import {LightFarm} from "./LightFarm";
 import {Sky} from "three/addons/objects/Sky.js";
+import {gui} from "./GUIManager";
 
 
 var scene, camera, renderer, mesh;
@@ -93,16 +94,32 @@ function init() {
         1000
     );
 
+
     //Sky
     const sky = new Sky();
     sky.scale.set(100, 1000, 100);
-    //scene.add(sky); //add sky if you want it
+    let skyVisible = false
 
     sky.material.uniforms['turbidity'].value = 10;
     sky.material.uniforms['rayleigh'].value = 3;
     sky.material.uniforms['mieCoefficient'].value = 0.1;
     sky.material.uniforms['mieDirectionalG'].value = 0.95;
     sky.material. uniforms['sunPosition'].value.set(0.3,-0.038, -0.95)
+
+    // Add GUI control for Sky
+    const skyFolder = gui.addFolder('Sky');
+    skyFolder.add({ skyVisible: false }, 'skyVisible').name('Toggle Sky').onChange((value) => {
+        skyVisible = value;
+        if (skyVisible) {
+            scene.add(sky);
+        } else {
+            scene.remove(sky);
+        }
+    });
+    skyFolder.open();
+
+
+
 
     //Fog
     //scene.fog = new THREE.FogExp2('#808080', 0.05);

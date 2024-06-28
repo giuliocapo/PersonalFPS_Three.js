@@ -187,3 +187,8 @@ capsuleBoundingBoxes.zombie[key].hp -= 1;
                     if ((capsuleBoundingBoxes.zombie[key].hp) === 0 ){
                         scene.remove(meshes[key]);
                         scene.remove(capsuleBoundingBoxes.zombie[key].cBBox);
+
+
+COSA VOGLIO FARE: ZOMBIE CHE SPAWNANO, SUONO PISTOLA, IO CHE TENGO IN MANO LA PISTOLA, ZOMBIE CHE FANNO DANNO QUANDO SONO SU DI ME E LA MIA VITA CHE RESTARTA LA PAGINA
+,PROIETTILI RIMBALZANTI, PROIETTILI CON CADENZA, RICARICA PISTOLA,, TERRENO E CASETTA COME IL KING DI 3JS, COMMENTA CON TIPO NUM 1, NUM 2 LE PARTI DEL CODICE
+DA FAR VEDERE DURANTE LA PRESENTAZIONE.

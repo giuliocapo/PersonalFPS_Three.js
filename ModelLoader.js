@@ -3,7 +3,7 @@ import {MTLLoader} from "three/examples/jsm/loaders/MTLLoader";
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
-import GUI from "three/examples/jsm/libs/lil-gui.module.min";
+import {gui} from "./GUIManager";
 
 
 //Load Models
@@ -88,7 +88,6 @@ export function addCapsuleBoundingBox(mesh, scale, position, key, scene, capsule
     console.log(`${key} Capsule Mesh:`, capsuleBoundingBoxes.zombie[key]);
 
     // Add GUI control for opacity
-    const gui = new GUI();
     const capsuleFolder = gui.addFolder('Capsule');
     capsuleFolder.add(capsuleMaterial, 'opacity', 0, 1).name('Opacity').onChange(() => {
         capsuleMaterial.needsUpdate = true;
