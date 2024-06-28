@@ -16,6 +16,7 @@ export class LightFarm {
         pointLight.castShadow = true;
         pointLight.shadow.camera.near = 0.1;
         pointLight.shadow.camera.far = 25;
+        pointLight.shadow.bias = 0.0001;
         this.scene.add(pointLight);
     }
 }

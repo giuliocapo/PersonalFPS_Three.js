@@ -4,6 +4,7 @@ import {addBoundingBox, addCapsuleBoundingBox, LoadAnimatedModel, LoadModel, loa
 import {LightFarm} from "./LightFarm";
 import {Sky} from "three/addons/objects/Sky.js";
 import {gui} from "./GUIManager";
+import {all} from "three/examples/jsm/nodes/math/MathNode";
 
 
 var scene, camera, renderer, mesh;
@@ -19,6 +20,18 @@ var mixers = [];
 
 //create a player object to hold details about the 'player', such as height and move speed
 var player = { height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 };
+
+//GUI command for speed and turnspeed
+{
+    const speedPlayerFolder = gui.addFolder('speedPlayer');
+    speedPlayerFolder.add(player, 'speed', 0, 1).name('Speed');
+    speedPlayerFolder.open();
+
+    const rotationSpeedPlayerFolder = gui.addFolder('rotationSpeedPlayer');
+    rotationSpeedPlayerFolder.add(player, 'turnSpeed', 0, Math.PI * 0.01).name('Turn Speed');
+    rotationSpeedPlayerFolder.open();
+}
+
 var USE_WIREFRAME = false;
 
 //loading screen object (scene, camera, mesh)
@@ -68,14 +81,15 @@ var models = {
 //Meshes object to index and will store every object appears in the scene indexed by a key
 var meshes = {}
 
-// BoundingBoxes object to store the bounding boxes of the meshes
+// BoundingBoxes object to store the bounding boxes of the meshes and PLAYER
 var boundingBoxes = {};
 
 
 // capsuleBoundingBoxes object to store the bounding boxes of the zombies and also HP!
 var capsuleBoundingBoxes = {
-    zombie: {}
+    zombie: {},
 };
+
 
 
 //Bullets array to hold the bullets
@@ -94,46 +108,54 @@ function init() {
         1000
     );
 
-
     //Sky
-    const sky = new Sky();
-    sky.scale.set(100, 1000, 100);
-    let skyVisible = false
+    {
+        const sky = new Sky();
+        sky.scale.set(100, 1000, 100);
+        let skyVisible = false
 
-    sky.material.uniforms['turbidity'].value = 10;
-    sky.material.uniforms['rayleigh'].value = 3;
-    sky.material.uniforms['mieCoefficient'].value = 0.1;
-    sky.material.uniforms['mieDirectionalG'].value = 0.95;
-    sky.material. uniforms['sunPosition'].value.set(0.3,-0.038, -0.95)
+        sky.material.uniforms['turbidity'].value = 10;
+        sky.material.uniforms['rayleigh'].value = 3;
+        sky.material.uniforms['mieCoefficient'].value = 0.1;
+        sky.material.uniforms['mieDirectionalG'].value = 0.95;
+        sky.material.uniforms['sunPosition'].value.set(0.3, -0.038, -0.95)
 
-    // Add GUI control for Sky
-    const skyFolder = gui.addFolder('Sky');
-    skyFolder.add({ skyVisible: false }, 'skyVisible').name('Toggle Sky').onChange((value) => {
-        skyVisible = value;
-        if (skyVisible) {
-            scene.add(sky);
-        } else {
-            scene.remove(sky);
-        }
-    });
-    skyFolder.open();
+        // Add GUI control for Sky
+        const skyFolder = gui.addFolder('Sky');
+        skyFolder.add({skyVisible: false}, 'skyVisible').name('Toggle Sky').onChange((value) => {
+            skyVisible = value;
+            if (skyVisible) {
+                scene.add(sky);
+            } else {
+                scene.remove(sky);
+            }
+        });
+        skyFolder.open();
 
-
-
+    }
 
     //Fog
-    //scene.fog = new THREE.FogExp2('#808080', 0.05);
+    {
+        scene.fog = new THREE.FogExp2('#808080', 0.05);
+        const fogFolder = gui.addFolder('Fog');
+        fogFolder.add({fogDensity: 0.05}, 'fogDensity', 0, 0.1).name('Fog Density').onChange((value) => {
+            scene.fog.density = value;
+        });
+        fogFolder.open();
+    }
 
-    const loaderSkybox = new THREE.CubeTextureLoader();
-    scene.background = loaderSkybox.load([
-        'zombieSkybox1.png',
-        'zombieSkybox1.png',
-        'zombieSkybox1.png',
-        'zombieSkybox1.png',
-        'zombieSkybox1.png',
-        'zombieSkybox1.png'
-    ]);
-
+    //Background images
+    {
+        const loaderSkybox = new THREE.CubeTextureLoader();
+        scene.background = loaderSkybox.load([
+            'zombieSkybox1.png',
+            'zombieSkybox1.png',
+            'zombieSkybox1.png',
+            'zombieSkybox1.png',
+            'zombieSkybox1.png',
+            'zombieSkybox1.png'
+        ]);
+    }
 
     //set up loading screen scene
     loadingScreen.box.position.set(0,0,5);
@@ -251,6 +273,18 @@ function init() {
     camera.lookAt(new THREE.Vector3(0, player.height, 0));
 
 
+
+    // Player Bounding Box creation
+    const cameraBoundingBox = new THREE.BoxGeometry();
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const playerBox = new THREE.Mesh(cameraBoundingBox, material);
+
+    addBoundingBox(playerBox, new THREE.Vector3(1, 2, 1),  camera.position, 'player', scene, boundingBoxes);
+
+
+
+
+
     renderer = new THREE.WebGLRenderer({ antialias: true }); // Ensure correct initialization of WebGLRenderer, antialiasing true to correct corner errors.
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
@@ -296,6 +330,7 @@ function onResourcesLoaded(){
     addBoundingBox(meshes["cliff_block_rock"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-11, -1, 1), 'cliff_block_rock', scene, boundingBoxes);
     scene.add(meshes["cliff_block_rock"]);
 
+
     addBoundingBox(meshes["cliff_block_rock"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-11, -1, 1), 'cliff_block_rock', scene, boundingBoxes);
     scene.add(meshes["cliff_block_rock"]);
 
@@ -326,6 +361,18 @@ function onResourcesLoaded(){
 }
 
 const clock = new THREE.Clock();
+
+//Player vs Meshes collision function
+function checkCollision() {                                                                                         //DA RIVEDERE
+    boundingBoxes['player'].setFromCenterAndSize(camera.position, new THREE.Vector3(1, 1, 1)); //NEED TO REVIEW BECAUSE SEEMS LIKE DOESN'T WORK WITHOUT INCLUDING FIRST THE BOUNDING BOX OF PLAYER QUINDI A CHE SERVE SETFROMCENTER AND SIZE
+    for (const key in boundingBoxes) {
+        if (key !== 'player' && boundingBoxes['player'].intersectsBox(boundingBoxes[key])) {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 function animate() {
 
@@ -362,21 +409,37 @@ function animate() {
 
     // Keyboard movement inputs
     if(keyboard[87]){ // W key
+        const previousPosition = camera.position.clone();
         camera.position.x -= Math.sin(camera.rotation.y) * player.speed;
         camera.position.z -= -Math.cos(camera.rotation.y) * player.speed;
+        if (checkCollision()) {
+            camera.position.copy(previousPosition); //if there is a collision reset the position
+        }
     }
     if(keyboard[83]){ // S key
+        const previousPosition = camera.position.clone();
         camera.position.x += Math.sin(camera.rotation.y) * player.speed;
         camera.position.z += -Math.cos(camera.rotation.y) * player.speed;
+        if (checkCollision()) {
+            camera.position.copy(previousPosition); //if there is a collision reset the position
+        }
     }
     if(keyboard[65]){ // A key
         // Redirect movement by 90 degrees
+        const previousPosition = camera.position.clone();
         camera.position.x += Math.sin(camera.rotation.y + Math.PI/2) * player.speed;
         camera.position.z += -Math.cos(camera.rotation.y + Math.PI/2) * player.speed;
+        if (checkCollision()) {
+            camera.position.copy(previousPosition); //if there is a collision reset the position
+        }
     }
     if(keyboard[68]){ // D key
+        const previousPosition = camera.position.clone();
         camera.position.x += Math.sin(camera.rotation.y - Math.PI/2) * player.speed;
         camera.position.z += -Math.cos(camera.rotation.y - Math.PI/2) * player.speed;
+        if (checkCollision()) {
+            camera.position.copy(previousPosition); //if there is a collision reset the position
+        }
     }
 
     // Keyboard turn camera on player inputs
