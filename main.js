@@ -19,7 +19,7 @@ keyboard = {};
 var mixers = [];
 
 //create a player object to hold details about the 'player', such as height and move speed
-var player = { height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 };
+var player = { height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 , bBox: null};
 
 //GUI command for speed and turnspeed
 {
@@ -279,7 +279,9 @@ function init() {
     const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
     const playerBox = new THREE.Mesh(cameraBoundingBox, material);
 
-    addBoundingBox(playerBox, new THREE.Vector3(1, 2, 1),  camera.position, 'player', scene, boundingBoxes);
+    player.bBox = new THREE.Box3().setFromObject(playerBox);
+    console.log(`${'player'} BBox:`, player.bBox);
+
 
 
 
@@ -364,9 +366,9 @@ const clock = new THREE.Clock();
 
 //Player vs Meshes collision function
 function checkCollision() {                                                                                         //DA RIVEDERE
-    boundingBoxes['player'].setFromCenterAndSize(camera.position, new THREE.Vector3(1, 1, 1)); //NEED TO REVIEW BECAUSE SEEMS LIKE DOESN'T WORK WITHOUT INCLUDING FIRST THE BOUNDING BOX OF PLAYER QUINDI A CHE SERVE SETFROMCENTER AND SIZE
+    player.bBox.setFromCenterAndSize(camera.position, new THREE.Vector3(1, 2, 1)); //NEED TO REVIEW BECAUSE SEEMS LIKE DOESN'T WORK WITHOUT INCLUDING FIRST THE BOUNDING BOX OF PLAYER QUINDI A CHE SERVE SETFROMCENTER AND SIZE
     for (const key in boundingBoxes) {
-        if (key !== 'player' && boundingBoxes['player'].intersectsBox(boundingBoxes[key])) {
+        if (player.bBox.intersectsBox(boundingBoxes[key])) {
             return true;
         }
     }

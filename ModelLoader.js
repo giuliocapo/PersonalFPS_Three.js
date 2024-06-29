@@ -46,6 +46,7 @@ export function addBoundingBox(mesh, scale, position, key, scene, boundingBoxes)
     const boxHelper = new THREE.BoxHelper(mesh, 0xff0000);
     scene.add(boxHelper);
 
+
     boundingBoxes[key] = new THREE.Box3().setFromObject(mesh);
     console.log(`${key} BBox:`, boundingBoxes[key]);
 }
@@ -87,8 +88,8 @@ export function addCapsuleBoundingBox(mesh, scale, position, key, scene, capsule
     };
     console.log(`${key} Capsule Mesh:`, capsuleBoundingBoxes.zombie[key]);
 
-    // Add GUI control for opacity
-    const capsuleFolder = gui.addFolder('Capsule');
+    // Add GUI control for capsule opacity
+    const capsuleFolder = gui.addFolder('Zombie Capsules');
     capsuleFolder.add(capsuleMaterial, 'opacity', 0, 1).name('Opacity').onChange(() => {
         capsuleMaterial.needsUpdate = true;
     });
