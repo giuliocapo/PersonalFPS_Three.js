@@ -196,9 +196,23 @@ added some GUI functionalities and the collision function player vs meshes.
 16.
 I put bBox in player object so i changed collision function against meshes
 
+17.
+I added the creation of zombies as many as I want in the sides of the map,
+every zombie is in meshes as all meshes as before but the capsulboundingbox structure is mantained as before.
+I also changed the animate() function for the zombie to let all zombie to animate as the first zombie created. also added a cool way to manage
+all capsule with a call from main for boundingboxes.
+
+18.
+I added collition function for the zombie with meshes and player. just as for the player i've saved last position every time for the capsulebox and the zombie (that
+are separated object) and if they have a collision with meshes or player the continue to update their position with the last saved. the capsuleBox is a
+capsule geometry then i had to create the box to collide with the zombie in this way:
+const zombieMesh = capsuleBoundingBoxes.zombie[key2].cBBox;
+const zombieBox = new THREE.Box3().setFromObject(zombieMesh);
 
 
-COSA VOGLIO FARE: ZOMBIE CHE SPAWNANO, SUONO PISTOLA, IO CHE TENGO IN MANO LA PISTOLA, ZOMBIE CHE FANNO DANNO QUANDO SONO SU DI ME E LA MIA VITA CHE RESTARTA LA PAGINA
-,PROIETTILI RIMBALZANTI, PROIETTILI CON CADENZA, RICARICA PISTOLA,, TERRENO E CASETTA COME IL KING DI 3JS, COMMENTA CON TIPO NUM 1, NUM 2 LE PARTI DEL CODICE
+RILEGGI: direction.subVectors(camera.position, zombie.position).normalize();
+
+COSA VOGLIO FARE: COLLISIONI ZOMBIE, SUONO PISTOLA, ZOMBIE CHE FANNO DANNO QUANDO SONO SU DI ME E LA MIA VITA CHE RESTARTA LA PAGINA
+,PROIETTILI RIMBALZANTI, PROIETTILI CON CADENZA, RICARICA PISTOLA, IO CHE TENGO IN MANO LA PISTOLA, TERRENO E CASETTA COME IL KING DI 3JS, COMMENTA CON TIPO NUM 1, NUM 2 LE PARTI DEL CODICE
 DA FAR VEDERE DURANTE LA PRESENTAZIONE.
 

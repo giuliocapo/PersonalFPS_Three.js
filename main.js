@@ -27,7 +27,7 @@ keyboard = {};
 var mixers = [];
 
 //create a player object to hold details about the 'player', such as height and move speed
-var player = { height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 , bBox: null};
+var player = { hp: 600, height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 , bBox: null};
 
 //GUI command for speed and turnspeed
 {
@@ -387,6 +387,7 @@ function onResourcesLoaded(){
 
 const clock = new THREE.Clock();
 
+//COLLISION FUNCTION
 //Player vs Meshes collision function
 function checkCollision() {                                                                                         //DA RIVEDERE
     player.bBox.setFromCenterAndSize(camera.position, new THREE.Vector3(1, 2, 1)); //NEED TO REVIEW BECAUSE SEEMS LIKE DOESN'T WORK WITHOUT INCLUDING FIRST THE BOUNDING BOX OF PLAYER QUINDI A CHE SERVE SETFROMCENTER AND SIZE
@@ -398,7 +399,29 @@ function checkCollision() {                                                     
     return false;
 }
 
+function checkCollisionZombieMeshesAndPlayer() {
+    for (const key in boundingBoxes) {
+        for (const key2 in capsuleBoundingBoxes.zombie) {
+            player.bBox.setFromCenterAndSize(camera.position, new THREE.Vector3(1, 2, 1));
+            const zombieMesh = capsuleBoundingBoxes.zombie[key2].cBBox;
+            const zombieBox = new THREE.Box3().setFromObject(zombieMesh);
+            if (boundingBoxes[key].intersectsBox(zombieBox)) {
+                //console.log('zombieBox hitted');
+                return true;
+            }
+            if  (player.bBox.intersectsBox(zombieBox)){
+                player.hp -= 1;
+                if(player.hp <= 0){
+                    console.log(player.hp);
+                    //location.reload(); //reload the page when you die. METTI UN POPUP CHE TI OBBLIGA A RELOADDARE ALTRIMENTI ESPLODE TUTTO
+                }
+                return true;
+            }
 
+        }
+    }
+    return false;
+}
 function animate() {
 
     if ( RESOURCES_LOADED === false){
@@ -590,15 +613,26 @@ function animate() {
                 // Setup zombies' velocity
                 const speed = 1.6;
 
+                const actualBoxPos = capsuleBoundingBoxes.zombie[key].cBBox.position.clone();
+                const actualZombiePos = zombie.position.clone();
                 // Update the position of the zombie only on X and Z to let him walk on the Y = 0 (ground)
                 zombie.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
 
                 // Update the position of the capsuleBoundingBox only on X and Z
                 capsuleBoundingBoxes.zombie[key].cBBox.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
 
+                //******************LEGGI**********
+                //QUI FAI LA COLLISIONE DEL TIPO SALVI LA POS DI PRIMA SE LA BOUNDING TOCCA UNA MESH ZOMBIE TORNI ALLA POSIZIONE DI PRIMA
+
+
+                if(checkCollisionZombieMeshesAndPlayer()){
+                    capsuleBoundingBoxes.zombie[key].cBBox.position.copy(actualBoxPos);
+                    zombie.position.copy(actualZombiePos);
+                }
                 // Calculate the rotation to let him look at the camera (player)
                 const lookAtPosition = new THREE.Vector3(camera.position.x, zombie.position.y, camera.position.z);
-                zombie.lookAt(lookAtPosition);
+                zombie
+                    .lookAt(lookAtPosition);
             }
         }
     }
