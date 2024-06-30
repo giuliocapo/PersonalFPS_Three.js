@@ -1,10 +1,17 @@
 import * as THREE from 'three';
 
-import {addBoundingBox, addCapsuleBoundingBox, LoadAnimatedModel, LoadModel, loadModels} from "./ModelLoader";
+import {
+    addBoundingBox,
+    addCapsuleBoundingBox,
+    addCapsuleOpacityGui,
+    LoadAnimatedModel,
+    LoadModel,
+    loadModels
+} from "./ModelLoader";
 import {LightFarm} from "./LightFarm";
 import {Sky} from "three/addons/objects/Sky.js";
 import {gui} from "./GUIManager";
-import {all} from "three/examples/jsm/nodes/math/MathNode";
+
 
 
 var scene, camera, renderer, mesh;
@@ -12,6 +19,7 @@ var meshFloor;
 
 var box, boxTexture, boxNormalMap, boxBumpMap;
 
+var mapSize = 100; // Dimensione della mappa
 
 var keyboard;
 keyboard = {};
@@ -199,7 +207,7 @@ function init() {
     scene.add(mesh);
 
     meshFloor = new THREE.Mesh(
-        new THREE.PlaneGeometry(100,100., 100,100), //more segments = more polygons, which results in more detail.
+        new THREE.PlaneGeometry(mapSize,mapSize, mapSize,mapSize), //more segments = more polygons, which results in more detail.
         new THREE.MeshPhongMaterial( {color: 0x8b0000, wireframe: USE_WIREFRAME}), //wireframe is useful to see the true geometry of things.
     )
     meshFloor.rotation.x -= Math.PI/2; //rotate the mesh of 90grades x.
@@ -240,22 +248,37 @@ function init() {
     //LOAD MODELS
     loadModels(models, loadingManager);
 
-    // Carica il modello animato
-    LoadAnimatedModel('zombie/',
-        'mremireh_o_desbiens.fbx',
-        'walk.fbx',
-        'zombie', mixers, scene, meshes, loadingManager)
-        .then(() => {
-            meshes['zombie'].rotation.set(0, Math.PI, 0);
-            addCapsuleBoundingBox(meshes['zombie'], new THREE.Vector3(0.02, 0.02, 0.02), new THREE.Vector3(6, 0, 0), 'zombie', scene, capsuleBoundingBoxes);
-            //console.log(capsuleBoundingBoxes);
-            capsuleBoundingBoxes.zombie['zombie'].hp = 5; //added hp integer value to the sub object zombie with name zombie in this case. so now capsuleBoundingBoxes.zombie['zombie'] got mesh and hp.
+    // Funzione per ottenere una posizione casuale sui lati del quadrato
+    function getRandomPositionOnEdge(mapSize) {
+        const edge = Math.floor(Math.random() * 4);
+        const offset = (Math.random() - 0.5) * mapSize;
+        switch (edge) {
+            case 0: return new THREE.Vector3(-mapSize / 2, 0, offset); // lato sinistro
+            case 1: return new THREE.Vector3(mapSize / 2, 0, offset);  // lato destro
+            case 2: return new THREE.Vector3(offset, 0, -mapSize / 2); // lato inferiore
+            case 3: return new THREE.Vector3(offset, 0, mapSize / 2);  // lato superiore
+            default: return new THREE.Vector3(0, 0, 0);
+        }
+    }
+
+    // Creazione degli zombie
+    const zombieCount = 10;
 
 
-        })
-        .catch(error => {
-            console.error('Error loading model or animation:', error);
-        });
+    for (let i = 1; i <= zombieCount; i++) {
+        const zombieName = `zombie${i}`;
+        LoadAnimatedModel('zombie/', 'mremireh_o_desbiens.fbx', 'walk.fbx', zombieName, mixers, scene, meshes, loadingManager)
+            .then(() => {
+                meshes[zombieName].rotation.set(0, Math.PI, 0);
+                const position = getRandomPositionOnEdge(mapSize);
+                addCapsuleBoundingBox(meshes[zombieName], new THREE.Vector3(0.02, 0.02, 0.02), position, zombieName, scene, capsuleBoundingBoxes);
+                capsuleBoundingBoxes.zombie[zombieName].hp = 5; //added hp integer value to the sub object zombie with name zombie in this case. so now capsuleBoundingBoxes.zombie['zombie'] got mesh and hp.
+            })
+            .catch(error => {
+                console.error('Error loading model or animation:', error);
+            });
+    }
+    addCapsuleOpacityGui(); //I invented this type of call to let manage all the capsule opacity together with one folder on GUI
 
     LoadModel(scene, loadingManager);
     //LoadModel();
@@ -556,28 +579,34 @@ function animate() {
     mixers.forEach(mixer => mixer.update(delta));
 
     // Move zombie towards the camera
-    if (meshes["zombie"]) {
-        const direction = new THREE.Vector3();
-        direction.subVectors(camera.position, meshes["zombie"].position).normalize(); // Calcola la direzione verso la telecamera
 
-        //Setup zombies' velocity
-        const speed = 1.6;
+    for (const key in meshes) {
+        if (key.startsWith('zombie')) { //check only the mesh that start with zombie that are obviously zombie, so I have all the meshes loaded in mesh without changing anything
+            const zombie = meshes[key];
+            if (zombie) {
+                const direction = new THREE.Vector3();
+                direction.subVectors(camera.position, zombie.position).normalize(); // Calculate the direction towards the camera
 
-        //Update the position of the zombie only on X and Z to let him walk on the Y = 0 (ground)
-        meshes["zombie"].position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
+                // Setup zombies' velocity
+                const speed = 1.6;
 
-        //Update the position of the capsuleBoundingBox only on X and Y
-        capsuleBoundingBoxes.zombie["zombie"].cBBox.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
+                // Update the position of the zombie only on X and Z to let him walk on the Y = 0 (ground)
+                zombie.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
 
-        //Calculate the rotation to let him look to the camera (player)
-        const lookAtPosition = new THREE.Vector3(camera.position.x, meshes["zombie"].position.y, camera.position.z);
-        meshes["zombie"].lookAt(lookAtPosition);
+                // Update the position of the capsuleBoundingBox only on X and Z
+                capsuleBoundingBoxes.zombie[key].cBBox.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
+
+                // Calculate the rotation to let him look at the camera (player)
+                const lookAtPosition = new THREE.Vector3(camera.position.x, zombie.position.y, camera.position.z);
+                zombie.lookAt(lookAtPosition);
+            }
+        }
     }
-
 
     // Draw the scene from the perspective of the camera.
     renderer.render(scene, camera);
 }
+
 
 
 

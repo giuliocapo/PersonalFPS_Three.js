@@ -54,6 +54,7 @@ export function addBoundingBox(mesh, scale, position, key, scene, boundingBoxes)
 /*add an invisible capsule bounding box around a given mesh for collision detection. I utilized the capsule geometry and using maths from the scaled mesh"zombie"
 I've created a capsule similar to the zombie, we can also give opacity or not to see that.
 */
+var capsuleMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true,  opacity: 1, transparent: true }); //I invented this type of call to let manage all the capsule opacity together with one folder on GUI
 export function addCapsuleBoundingBox(mesh, scale, position, key, scene, capsuleBoundingBoxes) {
     //Position and scale the original model
     mesh.position.copy(position);
@@ -71,7 +72,6 @@ export function addCapsuleBoundingBox(mesh, scale, position, key, scene, capsule
     const capsuleGeometry = new THREE.CapsuleGeometry(capsuleRadius, capsuleHeight, 4, 8);
 
     //Create a mesh for the capsule
-    const capsuleMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true,  opacity: 1, transparent: true }); //here I can change opacity to make capsule bounding visible
     const capsuleMesh = new THREE.Mesh(capsuleGeometry, capsuleMaterial);
 
     //Calculate the capsule position to center it relative to the model
@@ -88,6 +88,10 @@ export function addCapsuleBoundingBox(mesh, scale, position, key, scene, capsule
     };
     console.log(`${key} Capsule Mesh:`, capsuleBoundingBoxes.zombie[key]);
 
+}
+
+//I invented this type of call to let manage all the capsule opacity together with one folder on GUI
+export function addCapsuleOpacityGui(){
     // Add GUI control for capsule opacity
     const capsuleFolder = gui.addFolder('Zombie Capsules');
     capsuleFolder.add(capsuleMaterial, 'opacity', 0, 1).name('Opacity').onChange(() => {
@@ -95,6 +99,7 @@ export function addCapsuleBoundingBox(mesh, scale, position, key, scene, capsule
     });
     capsuleFolder.open();
 }
+
 export function LoadAnimatedModel(path, mesh, anime, key, mixers, scene, meshes, loadingManager) {
     return new Promise((resolve, reject) => {
         const loader = new FBXLoader(loadingManager);
