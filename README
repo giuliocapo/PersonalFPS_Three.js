@@ -209,10 +209,15 @@ capsule geometry then i had to create the box to collide with the zombie in this
 const zombieMesh = capsuleBoundingBoxes.zombie[key2].cBBox;
 const zombieBox = new THREE.Box3().setFromObject(zombieMesh);
 
+19.
+I added hp of the player.
+
+20.
+added audioLoader.js from which i add ambient audio, shoot audio and also the easter egg audio
 
 RILEGGI: direction.subVectors(camera.position, zombie.position).normalize();
 
-COSA VOGLIO FARE: COLLISIONI ZOMBIE, SUONO PISTOLA, ZOMBIE CHE FANNO DANNO QUANDO SONO SU DI ME E LA MIA VITA CHE RESTARTA LA PAGINA
+COSA VOGLIO FARE: ZOMBIE CHE FANNO DANNO QUANDO SONO SU DI ME E LA MIA VITA CHE RESTARTA LA PAGINA
 ,PROIETTILI RIMBALZANTI, PROIETTILI CON CADENZA, RICARICA PISTOLA, IO CHE TENGO IN MANO LA PISTOLA, TERRENO E CASETTA COME IL KING DI 3JS, COMMENTA CON TIPO NUM 1, NUM 2 LE PARTI DEL CODICE
 DA FAR VEDERE DURANTE LA PRESENTAZIONE.
 

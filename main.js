@@ -11,13 +11,13 @@ import {
 import {LightFarm} from "./LightFarm";
 import {Sky} from "three/addons/objects/Sky.js";
 import {gui} from "./GUIManager";
-
+import {bulletSound, easterEgg, initAmbientAudio} from "./AudioLoader";
 
 
 var scene, camera, renderer, mesh;
 var meshFloor;
 
-var box, boxTexture, boxNormalMap, boxBumpMap;
+var boxEasterEggValue = 10, boxEasterEgg, boxTexture, boxNormalMap, boxBumpMap;
 
 var mapSize = 100; // Dimensione della mappa
 
@@ -99,7 +99,6 @@ var capsuleBoundingBoxes = {
 };
 
 
-
 //Bullets array to hold the bullets
 var bullets = [];
 
@@ -115,6 +114,10 @@ function init() {
         0.1,
         1000
     );
+
+    //MUSIC
+    //Ambient Music
+    initAmbientAudio('music/Ambient 02.mp3', scene);
 
     //Sky
     {
@@ -225,24 +228,28 @@ function init() {
     lightFarm.addPointLight(0xffffff, 100, 18, { x: -40, y: 6, z: -40 });
 
 
-    //BOX
-    boxTexture =  textureLoader.load("./textures/crate0/crate0_diffuse.png");
-    boxBumpMap = textureLoader.load("textures/crate0/crate0_bump.png");
-    boxNormalMap = textureLoader.load("./textures/crate0/crate0_normal.png");
+    //boxEasterEgg
+    {
+        boxTexture = textureLoader.load("./textures/crate0/crate0_diffuse.png");
+        boxBumpMap = textureLoader.load("textures/crate0/crate0_bump.png");
+        boxNormalMap = textureLoader.load("./textures/crate0/crate0_normal.png");
 
-    box = new THREE.Mesh(
-        new THREE.BoxGeometry(3, 3, 3),
-        new THREE.MeshPhongMaterial({
-            color: 0xffffff,
-            map: boxTexture,
-            bumpMap: boxBumpMap,
-            normalMap: boxNormalMap
-        })
-    );
-    scene.add(box);
-    box.receiveShadow = true;
-    box.castShadow = true;
-    box.position.set(2.5, 3/2, 2.5);
+        boxEasterEgg = new THREE.Mesh(
+            new THREE.BoxGeometry(3, 3, 3),
+            new THREE.MeshPhongMaterial({
+                color: 0xffffff,
+                map: boxTexture,
+                bumpMap: boxBumpMap,
+                normalMap: boxNormalMap
+            })
+        );
+        scene.add(boxEasterEgg);
+        boxEasterEgg.receiveShadow = true;
+        boxEasterEgg.castShadow = true;
+        const positionEasterEgg = getRandomPositionOnEdge(mapSize);
+        boxEasterEgg.position.copy(positionEasterEgg);
+        boxEasterEgg.position.y = 1.5; //CHANGE THIS TO LET PROF SEE THE MAPPING DONE ON THIS OBJECT
+    }
 
 
     //LOAD MODELS
@@ -412,7 +419,7 @@ function checkCollisionZombieMeshesAndPlayer() {
             if  (player.bBox.intersectsBox(zombieBox)){
                 player.hp -= 1;
                 if(player.hp <= 0){
-                    console.log(player.hp);
+                    //console.log(player.hp);
                     //location.reload(); //reload the page when you die. METTI UN POPUP CHE TI OBBLIGA A RELOADDARE ALTRIMENTI ESPLODE TUTTO
                 }
                 return true;
@@ -451,8 +458,8 @@ function animate() {
     mesh.rotation.x += 0.01;
     mesh.rotation.y += 0.02;
 
-    //rotate box
-    box.rotation.y += 0.001;
+    //rotate boxEasterEgg
+    boxEasterEgg.rotation.y += 0.001;
 
 
     // Keyboard movement inputs
@@ -499,9 +506,9 @@ function animate() {
     }
 
     //create a loop to update the bullets every frame
-    for(var index = 0; index < bullets.length; index += 1){
+    for(var index = 0; index < bullets.length; index += 1) {
         if (bullets[index] === undefined) continue;
-        if( bullets[index].alive === false){ //if the bullet is not alive, skip to the next one and remove this one
+        if (bullets[index].alive === false) { //if the bullet is not alive, skip to the next one and remove this one
             bullets.splice(index, 1)
             continue;
         }
@@ -517,10 +524,10 @@ function animate() {
 
                 //console.log('Checking collision for:', key); // Add key to debug statement
                 //console.log('Bullet Box:', bulletBox); // Debugging statement for bullet box
-               // console.log('Model Box:', models[key].bbox); // Debugging statement for model box
+                // console.log('Model Box:', models[key].bbox); // Debugging statement for model box
 
 
-                if (bulletBox.intersectsBox(boundingBoxes[key])){
+                if (bulletBox.intersectsBox(boundingBoxes[key])) {
                     console.log('Hit:', key);
                     bullets[index].alive = false;
                     scene.remove(bullets[index]);
@@ -538,22 +545,37 @@ function animate() {
                 // console.log('Model Box:', models[key].bbox); // Debugging statement for model box
                 var capsuleBox = new THREE.Box3().setFromObject(capsuleBoundingBoxes.zombie[key].cBBox);
 
-                if (bulletBox.intersectsBox(capsuleBox)){
+                if (bulletBox.intersectsBox(capsuleBox)) {
                     console.log('Hit:', key);
                     bullets[index].alive = false;
                     scene.remove(bullets[index]);
                     capsuleBoundingBoxes.zombie[key].hp -= 1;
-                    if ((capsuleBoundingBoxes.zombie[key].hp) === 0 ){
+                    if ((capsuleBoundingBoxes.zombie[key].hp) === 0) {
                         scene.remove(meshes[key]);
                         scene.remove(capsuleBoundingBoxes.zombie[key].cBBox);
                     }
                 }
             }
         }
+
+            //check collision easter egg
+        var bulletBox = new THREE.Box3().setFromObject(bullets[index]);
+        var easterEggBox = new THREE.Box3().setFromObject(boxEasterEgg);
+        if (bulletBox.intersectsBox(easterEggBox)) {
+            console.log('Hit:', boxEasterEgg);
+            bullets[index].alive = false;
+            scene.remove(bullets[index]);
+            boxEasterEggValue -= 1;
+            if (boxEasterEggValue === 0){
+                easterEgg();
+            }
+        }
+
     }
 
-    //spacebar clicked to shoot, it creates a sphere geometry
+    //spacebar clicked to shoot, it creates a sphere geometry, bullets shoot
     if (keyboard[32] && player.canShoot <= 0){
+        bulletSound();
         var bullet = new THREE.Mesh(
             new THREE.SphereGeometry(0.05,8,8),
             new THREE.MeshBasicMaterial({color: 0xffffff})
