@@ -15,16 +15,35 @@
             border-radius: 5px;
             display: block;
         }
-        #toggleButton {
+        #toggleButton, #toggleCenterMarkerButton {
             position: absolute;
             top: 10px;
-            left: 10px;
             background-color: #444;
             color: white;
             padding: 10px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+        }
+        #toggleButton {
+            left: 10px;
+        }
+        #toggleCenterMarkerButton {
+            left: 150px; /* Sposta il pulsante del marker a destra */
+        }
+        #centerMarker {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            margin-top: -5px;
+            margin-left: -5px;
+            border: 2px solid red;
+            border-radius: 50%;
+            z-index: 1000;
+            pointer-events: none;
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -39,11 +58,16 @@
     <p>Arrow Right - Turn Right</p>
 </div>
 <button id="toggleButton">Hide Commands</button>
+<button id="toggleCenterMarkerButton">Center Marker</button>
+<div id="centerMarker"></div>
 <script type="module" src="./main.js"></script>
 <script>
     const infoBox = document.getElementById('infoBox');
     const toggleButton = document.getElementById('toggleButton');
+    const centerMarker = document.getElementById('centerMarker');
+    const toggleCenterMarkerButton = document.getElementById('toggleCenterMarkerButton');
 
+    // Add toggle button functionality
     toggleButton.addEventListener('click', () => {
         if (infoBox.style.display === 'none') {
             infoBox.style.display = 'block';
@@ -51,6 +75,15 @@
         } else {
             infoBox.style.display = 'none';
             toggleButton.textContent = 'Show Commands';
+        }
+    });
+
+    // Add toggle center marker button functionality
+    toggleCenterMarkerButton.addEventListener('click', () => {
+        if (centerMarker.style.display === 'none' || centerMarker.style.display === '') {
+            centerMarker.style.display = 'block';
+        } else {
+            centerMarker.style.display = 'none';
         }
     });
 </script>

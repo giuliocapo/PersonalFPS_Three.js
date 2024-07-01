@@ -122,7 +122,7 @@ function init() {
     //Sky
     {
         const sky = new Sky();
-        sky.scale.set(100, 1000, 100);
+        sky.scale.set(100, 100, 100);
         let skyVisible = false
 
         sky.material.uniforms['turbidity'].value = 10;
@@ -535,14 +535,12 @@ function animate() {
                 }
             }
         }
+        //Check for bullet collisions with zombies
         for (var key in capsuleBoundingBoxes.zombie) {
             //console.log(boundingBoxes[key] ,key);
             if (capsuleBoundingBoxes.zombie[key] !== null) {
                 var bulletBox = new THREE.Box3().setFromObject(bullets[index]);
 
-                //console.log('Checking collision for:', key); // Add key to debug statement
-                //console.log('Bullet Box:', bulletBox); // Debugging statement for bullet box
-                // console.log('Model Box:', models[key].bbox); // Debugging statement for model box
                 var capsuleBox = new THREE.Box3().setFromObject(capsuleBoundingBoxes.zombie[key].cBBox);
 
                 if (bulletBox.intersectsBox(capsuleBox)) {
@@ -553,6 +551,7 @@ function animate() {
                     if ((capsuleBoundingBoxes.zombie[key].hp) === 0) {
                         scene.remove(meshes[key]);
                         scene.remove(capsuleBoundingBoxes.zombie[key].cBBox);
+
                     }
                 }
             }
@@ -588,7 +587,7 @@ function animate() {
 
         bullet.velocity =new THREE.Vector3(
             -Math.sin(camera.rotation.y), //being 45grades to give me direction of the bullet sin of y give me direction x
-            0, //we have no vertical velocity
+            -0.01, //bullet cadence (cadenza)
             Math.cos(camera.rotation.y)  //being 45grades to give me direction of the bullet cos of y give me direction z
         )
         bullet.alive = true;
