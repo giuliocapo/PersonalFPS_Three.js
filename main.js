@@ -538,7 +538,7 @@ function animate() {
         //Check for bullet collisions with zombies
         for (var key in capsuleBoundingBoxes.zombie) {
             //console.log(boundingBoxes[key] ,key);
-            if (capsuleBoundingBoxes.zombie[key] !== null) {
+            if (capsuleBoundingBoxes.zombie[key] !== null && capsuleBoundingBoxes.zombie[key] !== undefined) { //the second check is to solve the fact that we were trying to access now something I deleted here below.
                 var bulletBox = new THREE.Box3().setFromObject(bullets[index]);
 
                 var capsuleBox = new THREE.Box3().setFromObject(capsuleBoundingBoxes.zombie[key].cBBox);
@@ -551,7 +551,7 @@ function animate() {
                     if ((capsuleBoundingBoxes.zombie[key].hp) === 0) {
                         scene.remove(meshes[key]);
                         scene.remove(capsuleBoundingBoxes.zombie[key].cBBox);
-
+                        delete capsuleBoundingBoxes.zombie[key]; //unless I continue to hit a 'GHOST' capsule box in that position that blocks my bullets because it was remaining in the array.
                     }
                 }
             }
@@ -627,11 +627,11 @@ function animate() {
     for (const key in meshes) {
         if (key.startsWith('zombie')) { //check only the mesh that start with zombie that are obviously zombie, so I have all the meshes loaded in mesh without changing anything
             const zombie = meshes[key];
-            if (zombie) {
+            if (zombie !== undefined && capsuleBoundingBoxes.zombie[key] !== undefined) { //the second check is added because I added the deletion of zombie with his capsule on the collision when he dies so to make the function not join something undefiend, go read on bullet collision with zombie fun why I've done it
                 const direction = new THREE.Vector3();
                 direction.subVectors(camera.position, zombie.position).normalize(); // Calculate the direction towards the camera
 
-                // Setup zombies' velocity
+                // Setup zombies' velocity+
                 const speed = 1.6;
 
                 const actualBoxPos = capsuleBoundingBoxes.zombie[key].cBBox.position.clone();
