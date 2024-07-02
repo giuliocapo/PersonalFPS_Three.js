@@ -408,8 +408,18 @@ function checkCollision() {                                                     
 
 //function to calculate the reflected vector for collision with the meshes (bounce)
 function reflectVector(velocity, normal) {
-    return velocity.clone().sub(normal.clone().multiplyScalar(2 * velocity.dot(normal)));
+    //Calculate the dot product of the velocity and the normal that will project the velocity vector on the normal vector
+    const dotProduct = velocity.dot(normal);
+
+    //Clone the normal vector and scale it by 2 times the dot product to obtain the component on n, that is what we need.
+    const scaledNormal = normal.clone().multiplyScalar(2 * dotProduct);
+
+    //Clone the original velocity vector and subtract the scaled normal from it to obtein the perfect reflected vector
+    const reflectedVector = velocity.clone().sub(scaledNormal);
+
+    return reflectedVector; //w - 2(w * n)*n that is a bit different from the one we did for phong model but this works better.
 }
+
 
 function checkCollisionZombieMeshesAndPlayer() {
     for (const key in boundingBoxes) {
@@ -510,16 +520,14 @@ function animate() {
         camera.rotation.y += player.turnSpeed;
     }
 
-    //create a loop to update the bullets every frame
+    //create a loop to update the bullets every frame. Bullets creation.
     for(var index = 0; index < bullets.length; index += 1) {
         if (bullets[index] === undefined) continue;
         if (bullets[index].alive === false) { //if the bullet is not alive, skip to the next one and remove this one
             bullets.splice(index, 1)
             continue;
         }
-
         bullets[index].position.add(bullets[index].velocity); //add velocity to bullet's position
-
 
         // Check for bullet collisions with models
         for (var key in boundingBoxes) {
@@ -535,10 +543,11 @@ function animate() {
                 if (bulletBox.intersectsBox(boundingBoxes[key])) {
                     console.log('Hit:', key);
 
-                    // Calcola la normale della superficie colpita
+                    //calculate the NORMAL on the hitted surface
                     const normal = new THREE.Vector3();
                     const boundingBox = boundingBoxes[key];
 
+                    //calculates the minimum distances in each dimensions
                     const deltaX = Math.min(
                         Math.abs(bulletBox.max.x - boundingBox.min.x),
                         Math.abs(bulletBox.min.x - boundingBox.max.x)
@@ -553,25 +562,44 @@ function animate() {
                     );
 
                     if (deltaX < deltaY && deltaX < deltaZ) {
-                        normal.set(bulletBox.max.x > boundingBox.min.x ? -1 : 1, 0, 0);
+                        //If the deltaX is the smallest, it means the collision is on x face.
+
+                        if (bulletBox.max.x > boundingBox.min.x) {
+                            //If the bullet hits the right side of the bounding box
+                            normal.set(-1, 0, 0); //Normal pointing left
+                        } else {
+                            //If the bullet hits the left side of the bounding box
+                            normal.set(1, 0, 0); //Normal pointing right
+                        }
                     } else if (deltaY < deltaX && deltaY < deltaZ) {
-                        normal.set(0, bulletBox.max.y > boundingBox.min.y ? -1 : 1, 0);
+                        //If the deltaY is the smallest, it means the collision is on y face.
+
+                        if (bulletBox.max.y > boundingBox.min.y) {
+                            //If the bullet hits the top side of the bounding box
+                            normal.set(0, -1, 0); //Normal pointing down
+                        } else {
+                            //If the bullet hits the bottom side of the bounding box
+                            normal.set(0, 1, 0); //Normal pointing up
+                        }
                     } else {
-                        normal.set(0, 0, bulletBox.max.z > boundingBox.min.z ? -1 : 1);
+                        //If the deltaZ is the smallest, it means the collision is on z face.
+
+                        if (bulletBox.max.z > boundingBox.min.z) {
+                            //If the bullet hits the front side of the bounding box
+                            normal.set(0, 0, -1); //Normal pointing backwards
+                        } else {
+                            //If the bullet hits the back side of the bounding box
+                            normal.set(0, 0, 1); //Normal pointing forwards
+                        }
                     }
 
-                    // Muovi il proiettile leggermente lontano dalla superficie per evitare di rimanere incastrato
+
+                    //moves the bullet a bit from the surface because it was remaining blocked inside some meshes.
                     bullets[index].position.add(normal.clone().multiplyScalar(0.1));
 
-                    // Rifletti la velocità del proiettile
+                    //reflect the velocity of the bullet that will be updated with bullets[index].position.add(bullets[index].velocity) here above
                     bullets[index].velocity = reflectVector(bullets[index].velocity, normal);
 
-                    // Gestione dei rimbalzi
-                    bullets[index].bounceCount = (bullets[index].bounceCount || 0) + 1;
-                    if (bullets[index].bounceCount > 3) {
-                        bullets[index].alive = false;
-                        scene.remove(bullets[index]);
-                    }
                     /*
                     bullets[index].alive = false;
                     scene.remove(bullets[index]);
