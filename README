@@ -219,7 +219,7 @@ added audioLoader.js from which i add ambient audio, shoot audio and also the ea
 I added the bullet cadence (was the same code but adding something on y to let him drop), the UZI marker with css toggle in html
 
 22.
-I added in  // Move zombie towards the camera and  //Check for bullet collisions with zombies the check if the zombie in that check is different from undefined like
+I added in  // Move zombie towards the camera and //Check for bullet collisions with zombies the check if the zombie in that check is different from undefined like
 capsuleBoundingBoxes.zombie[key] !== undefined because i added delete capsuleBoundingBoxes.zombie[key]; to unless I continue to hit a 'GHOST' capsule box in that position that blocks
 my bullets because it was remaining in the array.
 
@@ -234,7 +234,12 @@ function reflectVector(velocity, normal) {
 and then i calculated the normal to the surface and calculated the new velocity with which the bullet moves.
 Added also number of bounces but i will delete it.
 
+24.
+I fix some lines for the bullet reflection function, commented the code and deleted the part for "fix amount of bounces",
+it's cooler let it bounce 10 times and after 1 sec like all bullet expire and with .splice funcion delete from the bullets array
+
 FAI VEDERE ALL'ESAME:
+IO HO PRATICAMENTE TUTTE ANIMATION PER TRASFORMATION.
 IMPARA BENE LE FUNZIONI IN TOTALE, CIOè COME FUNZIONA TUTTO IL SISTEMA DI SPARO DA QUANDO CREI LA SFERA MESH E POI CON LA VELOCITA LA SPOSTI FUORI SU ANIMATE
 E POI SE HITTI SUCCEDE QUESTO ECC, UGUALE PER GLI ALTRI "SISTEMI"
 

@@ -200,7 +200,7 @@ function init() {
     // Materials affect how the geometry looks, especially under lights.
     mesh = new THREE.Mesh(
         new THREE.BoxGeometry(1, 1, 1), // width, height, depth
-        new THREE.MeshPhongMaterial({color: 0xff4444, wireframe: USE_WIREFRAME}) // Phong material reacts to the light, MI STA DANDO ERRORE GIALLO PERCHè DI DEFAULT C'è IL BASICMATERIAL MA NN HA SENSO DATO CHE LO STO CAMBIANDO
+        new THREE.MeshPhongMaterial({color: 0xff4444, wireframe: USE_WIREFRAME}) // Phong material reacts to the light
     );
 
     mesh.position.y += 1; // Move the mesh up 1 meter
@@ -255,15 +255,15 @@ function init() {
     //LOAD MODELS
     loadModels(models, loadingManager);
 
-    // Funzione per ottenere una posizione casuale sui lati del quadrato
+    //Function to obtain a casual position on the sides of the floor.
     function getRandomPositionOnEdge(mapSize) {
         const edge = Math.floor(Math.random() * 4);
         const offset = (Math.random() - 0.5) * mapSize;
         switch (edge) {
-            case 0: return new THREE.Vector3(-mapSize / 2, 0, offset); // lato sinistro
-            case 1: return new THREE.Vector3(mapSize / 2, 0, offset);  // lato destro
-            case 2: return new THREE.Vector3(offset, 0, -mapSize / 2); // lato inferiore
-            case 3: return new THREE.Vector3(offset, 0, mapSize / 2);  // lato superiore
+            case 0: return new THREE.Vector3(-mapSize / 2, 0, offset); //left side
+            case 1: return new THREE.Vector3(mapSize / 2, 0, offset);  //right side
+            case 2: return new THREE.Vector3(offset, 0, -mapSize / 2); //south side
+            case 3: return new THREE.Vector3(offset, 0, mapSize / 2);  //north side
             default: return new THREE.Vector3(0, 0, 0);
         }
     }
@@ -678,12 +678,12 @@ function animate() {
         player.canShoot -= 1;
     }
 
-    // position the gun in front of the camera
+    // position the gun in front of the camera (position weapon)
     var time = Date.now() * 0.0005;
 
     meshes["playerWeapon"].position.set(
         camera.position.x - Math.sin(camera.rotation.y + Math.PI/6) * 0.75,
-        camera.position.y - 0.5 + Math.sin(time*4 + camera.position.x + camera.position.z)*0.01, //I added the camera.position.x and z to make the inhalation animation irregular when i'm moving
+        camera.position.y - 0.5 + Math.sin(time*4 + camera.position.x + camera.position.z)*0.01, //I added the camera.position.x and z to make the inhalation animation irregular when I'm moving
         camera.position.z  + Math.cos(camera.rotation.y + Math.PI/6) * 0.75
     );
     meshes["playerWeapon"].rotation.set(
@@ -704,15 +704,15 @@ function animate() {
                 const direction = new THREE.Vector3();
                 direction.subVectors(camera.position, zombie.position).normalize(); // Calculate the direction towards the camera
 
-                // Setup zombies' velocity+
+                //Setup zombies' velocity
                 const speed = 1.6;
 
                 const actualBoxPos = capsuleBoundingBoxes.zombie[key].cBBox.position.clone();
                 const actualZombiePos = zombie.position.clone();
-                // Update the position of the zombie only on X and Z to let him walk on the Y = 0 (ground)
+                //Update the position of the zombie only on X and Z to let him walk on the Y = 0 (ground)
                 zombie.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
 
-                // Update the position of the capsuleBoundingBox only on X and Z
+                //Update the position of the capsuleBoundingBox only on X and Z
                 capsuleBoundingBoxes.zombie[key].cBBox.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
 
                 //******************LEGGI**********

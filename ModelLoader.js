@@ -46,7 +46,6 @@ export function addBoundingBox(mesh, scale, position, key, scene, boundingBoxes)
     const boxHelper = new THREE.BoxHelper(mesh, 0xff0000);
     scene.add(boxHelper);
 
-
     boundingBoxes[key] = new THREE.Box3().setFromObject(mesh);
     console.log(`${key} BBox:`, boundingBoxes[key]);
 }
@@ -59,7 +58,7 @@ export function addCapsuleBoundingBox(mesh, scale, position, key, scene, capsule
     //Position and scale the original model
     mesh.position.copy(position);
     mesh.scale.copy(scale);
-    mesh.updateMatrixWorld(true);
+    mesh.updateMatrixWorld(true); //so we sure that the mesh is good scaled before create the capsule
 
     //Calculate the mesh dimensions
     const box = new THREE.Box3().setFromObject(mesh);
