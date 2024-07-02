@@ -406,6 +406,11 @@ function checkCollision() {                                                     
     return false;
 }
 
+//function to calculate the reflected vector for collision with the meshes (bounce)
+function reflectVector(velocity, normal) {
+    return velocity.clone().sub(normal.clone().multiplyScalar(2 * velocity.dot(normal)));
+}
+
 function checkCollisionZombieMeshesAndPlayer() {
     for (const key in boundingBoxes) {
         for (const key2 in capsuleBoundingBoxes.zombie) {
@@ -529,9 +534,49 @@ function animate() {
 
                 if (bulletBox.intersectsBox(boundingBoxes[key])) {
                     console.log('Hit:', key);
+
+                    // Calcola la normale della superficie colpita
+                    const normal = new THREE.Vector3();
+                    const boundingBox = boundingBoxes[key];
+
+                    const deltaX = Math.min(
+                        Math.abs(bulletBox.max.x - boundingBox.min.x),
+                        Math.abs(bulletBox.min.x - boundingBox.max.x)
+                    );
+                    const deltaY = Math.min(
+                        Math.abs(bulletBox.max.y - boundingBox.min.y),
+                        Math.abs(bulletBox.min.y - boundingBox.max.y)
+                    );
+                    const deltaZ = Math.min(
+                        Math.abs(bulletBox.max.z - boundingBox.min.z),
+                        Math.abs(bulletBox.min.z - boundingBox.max.z)
+                    );
+
+                    if (deltaX < deltaY && deltaX < deltaZ) {
+                        normal.set(bulletBox.max.x > boundingBox.min.x ? -1 : 1, 0, 0);
+                    } else if (deltaY < deltaX && deltaY < deltaZ) {
+                        normal.set(0, bulletBox.max.y > boundingBox.min.y ? -1 : 1, 0);
+                    } else {
+                        normal.set(0, 0, bulletBox.max.z > boundingBox.min.z ? -1 : 1);
+                    }
+
+                    // Muovi il proiettile leggermente lontano dalla superficie per evitare di rimanere incastrato
+                    bullets[index].position.add(normal.clone().multiplyScalar(0.1));
+
+                    // Rifletti la velocità del proiettile
+                    bullets[index].velocity = reflectVector(bullets[index].velocity, normal);
+
+                    // Gestione dei rimbalzi
+                    bullets[index].bounceCount = (bullets[index].bounceCount || 0) + 1;
+                    if (bullets[index].bounceCount > 3) {
+                        bullets[index].alive = false;
+                        scene.remove(bullets[index]);
+                    }
+                    /*
                     bullets[index].alive = false;
                     scene.remove(bullets[index]);
                     //scene.remove(meshes[key]);
+                     */
                 }
             }
         }

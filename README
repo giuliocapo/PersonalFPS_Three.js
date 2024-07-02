@@ -215,9 +215,32 @@ I added hp of the player.
 20.
 added audioLoader.js from which i add ambient audio, shoot audio and also the easter egg audio
 
+21.
+I added the bullet cadence (was the same code but adding something on y to let him drop), the UZI marker with css toggle in html
+
+22.
+I added in  // Move zombie towards the camera and  //Check for bullet collisions with zombies the check if the zombie in that check is different from undefined like
+capsuleBoundingBoxes.zombie[key] !== undefined because i added delete capsuleBoundingBoxes.zombie[key]; to unless I continue to hit a 'GHOST' capsule box in that position that blocks
+my bullets because it was remaining in the array.
+
+
+23.
+I added the function to let the bullet to bounce when hit ONLY meshes. I used
+
+//function to calculate the reflected vector for collision with the meshes (bounce)
+function reflectVector(velocity, normal) {
+    return velocity.clone().sub(normal.clone().multiplyScalar(2 * velocity.dot(normal)));
+}
+and then i calculated the normal to the surface and calculated the new velocity with which the bullet moves.
+Added also number of bounces but i will delete it.
+
+FAI VEDERE ALL'ESAME:
+ANIMATION: LOADING SCREEN, PISTOLA INALAZIONE ANIMAZIONE, PROIETTILE CHE PARTE DALLA PISTOLA, CADENZA, RIMBALZI PROIETTILI, SHADOW ECC ECC...
+
 RILEGGI: direction.subVectors(camera.position, zombie.position).normalize();
 
+
 COSA VOGLIO FARE: ZOMBIE CHE FANNO DANNO QUANDO SONO SU DI ME E LA MIA VITA CHE RESTARTA LA PAGINA
-,PROIETTILI RIMBALZANTI, PROIETTILI CON CADENZA, RICARICA PISTOLA, IO CHE TENGO IN MANO LA PISTOLA, TERRENO E CASETTA COME IL KING DI 3JS, COMMENTA CON TIPO NUM 1, NUM 2 LE PARTI DEL CODICE
+, , RICARICA PISTOLA, IO CHE TENGO IN MANO LA PISTOLA, TERRENO E CASETTA COME IL KING DI 3JS, COMMENTA CON TIPO NUM 1, NUM 2 LE PARTI DEL CODICE
 DA FAR VEDERE DURANTE LA PRESENTAZIONE.
 
