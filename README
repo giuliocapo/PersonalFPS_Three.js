@@ -238,6 +238,20 @@ Added also number of bounces but i will delete it.
 I fix some lines for the bullet reflection function, commented the code and deleted the part for "fix amount of bounces",
 it's cooler let it bounce 10 times and after 1 sec like all bullet expire and with .splice funcion delete from the bullets array
 
+
+25.
+added the fact that now when the zombie collides player take damage, also added another animation, just need to understand how to import another one.
+when zombie hit you you take too much damage, but if he collide with a mesh u take 1 damage, see if you can fix it.
+
+potresti anche risolvere semplicemente dicendo che i zombi che rimangono a ballare sono quelli che se ti rihittano ti fanno piu male, pero boh.
+altrimenti potresti mettere che quando ti si mette davanti fa la T pose, tanto quella la fa a prescindere se stoppi
+
+
+26.
+ancora da fare step 26
+
+
+
 FAI VEDERE ALL'ESAME:
 IO HO PRATICAMENTE TUTTE ANIMATION PER TRASFORMATION.
 IMPARA BENE LE FUNZIONI IN TOTALE, CIOè COME FUNZIONA TUTTO IL SISTEMA DI SPARO DA QUANDO CREI LA SFERA MESH E POI CON LA VELOCITA LA SPOSTI FUORI SU ANIMATE

@@ -99,7 +99,7 @@ export function addCapsuleOpacityGui(){
     capsuleFolder.open();
 }
 
-export function LoadAnimatedModel(path, mesh, anime, key, mixers, scene, meshes, loadingManager) {
+export function LoadAnimatedModel(path, mesh, anime1, anime2, key, mixers, scene, meshes, loadingManager) {
     return new Promise((resolve, reject) => {
         const loader = new FBXLoader(loadingManager);
         loader.setPath(path);
@@ -111,13 +111,26 @@ export function LoadAnimatedModel(path, mesh, anime, key, mixers, scene, meshes,
 
             const animLoader = new FBXLoader(loadingManager);
             animLoader.setPath(path);
-            animLoader.load(anime, (anim) => {
+            animLoader.load(anime1, (anim) => {
                 const mixer = new THREE.AnimationMixer(fbx);
                 mixers.push(mixer);
-                const action = mixer.clipAction(anim.animations[0]);
-                action.play();
-                resolve(fbx); //resolve the promise after the fbx is loaded
-            }, undefined, reject); //manage error for the animation loading, undefined is the third onLoad variable, reject is for OnError
+                const primaryAction = mixer.clipAction(anim.animations[0]);
+                primaryAction.play();
+
+                // Carica l'animazione secondaria
+                animLoader.load(anime2, (secondaryAnim) => {
+                    const secondaryAction = mixer.clipAction(secondaryAnim.animations[0]);
+
+                    // Salva entrambe le azioni nel userData
+                    fbx.userData.actions = {
+                        primary: primaryAction,
+                        secondary: secondaryAction
+                    };
+
+                    resolve(fbx); // resolve the promise when the two animation are loaded
+                }, undefined, reject); ////manage error for the animation 2 loading, undefined is the third onLoad variable, reject is for OnError
+
+            }, undefined, reject); //manage error for the animation 1 loading, undefined is the third onLoad variable, reject is for OnError
 
             scene.add(fbx);
             meshes[key] = fbx;
@@ -134,26 +147,3 @@ export function LoadModel(scene, loadingManager) {
         scene.add(gltf.scene);
     });
 }
-/*export function LoadAnimatedModelAndPlay(scene, mixers, path, modelFile, animFile, offset) {
-    const loader = new FBXLoader();
-    loader.setPath(path);
-    loader.load(modelFile, (fbx) => {
-        fbx.scale.setScalar(0.1);
-        fbx.traverse(c => {
-            c.castShadow = true;
-        });
-        fbx.position.copy(offset);
-
-        const animLoader = new FBXLoader();
-        animLoader.setPath(path);
-        animLoader.load(animFile, (anim) => {
-            const mixer = new THREE.AnimationMixer(fbx);
-            mixers.push(mixer);
-            const idle = mixer.clipAction(anim.animations[0]);
-            idle.play();
-        });
-
-        scene.add(fbx);
-    });
-}
-*/

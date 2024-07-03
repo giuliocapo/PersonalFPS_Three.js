@@ -268,18 +268,19 @@ function init() {
         }
     }
 
-    // Creazione degli zombie
-    const zombieCount = 10;
+    //ZOMBIE creation, fabric
+    const zombieCount = 1;
 
 
     for (let i = 1; i <= zombieCount; i++) {
         const zombieName = `zombie${i}`;
-        LoadAnimatedModel('zombie/', 'mremireh_o_desbiens.fbx', 'walk.fbx', zombieName, mixers, scene, meshes, loadingManager)
+        LoadAnimatedModel('zombie/', 'mremireh_o_desbiens.fbx', 'walk.fbx', 'dance.fbx', zombieName, mixers, scene, meshes, loadingManager)
             .then(() => {
                 meshes[zombieName].rotation.set(0, Math.PI, 0);
                 const position = getRandomPositionOnEdge(mapSize);
                 addCapsuleBoundingBox(meshes[zombieName], new THREE.Vector3(0.02, 0.02, 0.02), position, zombieName, scene, capsuleBoundingBoxes);
                 capsuleBoundingBoxes.zombie[zombieName].hp = 5; //added hp integer value to the sub object zombie with name zombie in this case. so now capsuleBoundingBoxes.zombie['zombie'] got mesh and hp.
+                capsuleBoundingBoxes.zombie[zombieName].canAttack = true;
             })
             .catch(error => {
                 console.error('Error loading model or animation:', error);
@@ -444,6 +445,8 @@ function checkCollisionZombieMeshesAndPlayer() {
     }
     return false;
 }
+
+
 function animate() {
 
     if ( RESOURCES_LOADED === false){
@@ -691,18 +694,19 @@ function animate() {
         camera.rotation.y - Math.PI,
         camera.rotation.z
     );
-
-    const delta = clock.getDelta();
-    mixers.forEach(mixer => mixer.update(delta));
+    const delta = clock.getDelta(); //the time passed since last frame
+    mixers.forEach(mixer => mixer.update(delta)); //update the animation respect to the real time(delta)
 
     // Move zombie towards the camera
 
     for (const key in meshes) {
         if (key.startsWith('zombie')) { //check only the mesh that start with zombie that are obviously zombie, so I have all the meshes loaded in mesh without changing anything
-            const zombie = meshes[key];
+            let zombie = meshes[key];
             if (zombie !== undefined && capsuleBoundingBoxes.zombie[key] !== undefined) { //the second check is added because I added the deletion of zombie with his capsule on the collision when he dies so to make the function not join something undefiend, go read on bullet collision with zombie fun why I've done it
+                let actions = zombie.userData.actions; //animation logic
+
                 const direction = new THREE.Vector3();
-                direction.subVectors(camera.position, zombie.position).normalize(); // Calculate the direction towards the camera
+                direction.subVectors(camera.position, zombie.position).normalize(); //Calculate the direction towards the camera, using normalize to make the vector be of unit 1 and maintain the direction
 
                 //Setup zombies' velocity
                 const speed = 1.6;
@@ -710,7 +714,7 @@ function animate() {
                 const actualBoxPos = capsuleBoundingBoxes.zombie[key].cBBox.position.clone();
                 const actualZombiePos = zombie.position.clone();
                 //Update the position of the zombie only on X and Z to let him walk on the Y = 0 (ground)
-                zombie.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
+                zombie.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta); //speed * delta si to make it consistent with the update of animation respect to delta
 
                 //Update the position of the capsuleBoundingBox only on X and Z
                 capsuleBoundingBoxes.zombie[key].cBBox.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
@@ -719,17 +723,41 @@ function animate() {
                 //QUI FAI LA COLLISIONE DEL TIPO SALVI LA POS DI PRIMA SE LA BOUNDING TOCCA UNA MESH ZOMBIE TORNI ALLA POSIZIONE DI PRIMA
 
 
-                if(checkCollisionZombieMeshesAndPlayer()){
-                    capsuleBoundingBoxes.zombie[key].cBBox.position.copy(actualBoxPos);
-                    zombie.position.copy(actualZombiePos);
-                }
                 // Calculate the rotation to let him look at the camera (player)
                 const lookAtPosition = new THREE.Vector3(camera.position.x, zombie.position.y, camera.position.z);
                 zombie
                     .lookAt(lookAtPosition);
+
+                //zombie collision player
+                if(checkCollisionZombieMeshesAndPlayer()){ //if this is true the zombie im blocking is the one making this true so the one on which we are updating position
+                    capsuleBoundingBoxes.zombie[key].cBBox.position.copy(actualBoxPos);
+                    zombie.position.copy(actualZombiePos);
+
+
+                    zombie.userData.actions.primary.stop();
+                    zombie.userData.actions.secondary.play();
+                    if(capsuleBoundingBoxes.zombie[key].canAttack){
+                        player.hp -= 1;
+                        console.log(`Zombie ha attaccato! Vita del giocatore: ${player.hp}`);
+                        capsuleBoundingBoxes.zombie[key].canAttack = false;
+                        setTimeout(() =>{
+                            capsuleBoundingBoxes.zombie[key].canAttack = true;
+                        },2000);
+                    }
+
+                }
+                /* non funziona
+                if(zombie.userData.actions.secondary.play() === true){
+                    zombie.userData.actions.secondary.stop();
+                    zombie.userData.actions.primary.play()
+
+                }*/
+
             }
+
         }
     }
+
 
     // Draw the scene from the perspective of the camera.
     renderer.render(scene, camera);
