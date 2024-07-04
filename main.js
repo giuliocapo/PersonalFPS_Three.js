@@ -27,7 +27,7 @@ keyboard = {};
 var mixers = [];
 
 //create a player object to hold details about the 'player', such as height and move speed
-var player = { hp: 600, height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 , bBox: null};
+var player = { hp: 20, height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 , bBox: null};
 
 //GUI command for speed and turnspeed
 {
@@ -268,8 +268,8 @@ function init() {
         }
     }
 
-    //ZOMBIE creation, fabric
-    const zombieCount = 1;
+    //ZOMBIE creation, fabric, factory
+    const zombieCount = 2;
 
 
     for (let i = 1; i <= zombieCount; i++) {
@@ -280,7 +280,7 @@ function init() {
                 const position = getRandomPositionOnEdge(mapSize);
                 addCapsuleBoundingBox(meshes[zombieName], new THREE.Vector3(0.02, 0.02, 0.02), position, zombieName, scene, capsuleBoundingBoxes);
                 capsuleBoundingBoxes.zombie[zombieName].hp = 5; //added hp integer value to the sub object zombie with name zombie in this case. so now capsuleBoundingBoxes.zombie['zombie'] got mesh and hp.
-                capsuleBoundingBoxes.zombie[zombieName].canAttack = true;
+                capsuleBoundingBoxes.zombie[zombieName].lastAttackTime = 0;
             })
             .catch(error => {
                 console.error('Error loading model or animation:', error);
@@ -393,19 +393,7 @@ function onResourcesLoaded(){
 
 }
 
-const clock = new THREE.Clock();
 
-//COLLISION FUNCTION
-//Player vs Meshes collision function
-function checkCollision() {                                                                                         //DA RIVEDERE
-    player.bBox.setFromCenterAndSize(camera.position, new THREE.Vector3(1, 2, 1)); //NEED TO REVIEW BECAUSE SEEMS LIKE DOESN'T WORK WITHOUT INCLUDING FIRST THE BOUNDING BOX OF PLAYER QUINDI A CHE SERVE SETFROMCENTER AND SIZE
-    for (const key in boundingBoxes) {
-        if (player.bBox.intersectsBox(boundingBoxes[key])) {
-            return true;
-        }
-    }
-    return false;
-}
 
 //function to calculate the reflected vector for collision with the meshes (bounce)
 function reflectVector(velocity, normal) {
@@ -421,36 +409,44 @@ function reflectVector(velocity, normal) {
     return reflectedVector; //w - 2(w * n)*n that is a bit different from the one we did for phong model but this works better.
 }
 
-
-function checkCollisionZombieWithMeshes() {
+//COLLISION FUNCTION
+//Player vs Meshes collision function
+function checkCollision() {                                                                                         //DA RIVEDERE
+    player.bBox.setFromCenterAndSize(camera.position, new THREE.Vector3(1, 2, 1)); //NEED TO REVIEW BECAUSE SEEMS LIKE DOESN'T WORK WITHOUT INCLUDING FIRST THE BOUNDING BOX OF PLAYER QUINDI A CHE SERVE SETFROMCENTER AND SIZE
     for (const key in boundingBoxes) {
-        for (const key2 in capsuleBoundingBoxes.zombie) {
-            const zombieMesh = capsuleBoundingBoxes.zombie[key2].cBBox;
-            const zombieBox = new THREE.Box3().setFromObject(zombieMesh);
-            if (boundingBoxes[key].intersectsBox(zombieBox)) {
-                //console.log('zombieBox hitted');
-                return true;
-            }
+        if (player.bBox.intersectsBox(boundingBoxes[key])) {
+            return true;
         }
     }
     return false;
 }
 
-function checkCollisionZombieWithPlayer(){
-    for (const key in capsuleBoundingBoxes.zombie) {
-        player.bBox.setFromCenterAndSize(camera.position, new THREE.Vector3(1, 2, 1));
-        const zombieMesh = capsuleBoundingBoxes.zombie[key].cBBox;
-        const zombieBox = new THREE.Box3().setFromObject(zombieMesh);
-        if  (player.bBox.intersectsBox(zombieBox)){
-            player.hp -= 1;
-            if(player.hp <= 0){
-                //console.log(player.hp);
-                //location.reload(); //reload the page when you die. METTI UN POPUP CHE TI OBBLIGA A RELOADDARE ALTRIMENTI ESPLODE TUTTO
-            }
+function checkCollisionZombieWithMeshes(thisZombieCapsuleBox) {
+    for (const key in boundingBoxes) {
+        const zombieBox = new THREE.Box3().setFromObject(thisZombieCapsuleBox);
+        if (boundingBoxes[key].intersectsBox(zombieBox)) {
+            //console.log('zombieBox hitted');
             return true;
         }
     }
+    return false;
 }
+
+function checkCollisionZombieWithPlayer(thisZombieCapsuleBox){
+    for (const key in capsuleBoundingBoxes.zombie) {
+        player.bBox.setFromCenterAndSize(camera.position, new THREE.Vector3(1, 2, 1));
+        const zombieBox = new THREE.Box3().setFromObject(thisZombieCapsuleBox);
+        if  (player.bBox.intersectsBox(zombieBox)){
+            return true;
+            }
+        else {
+            return false;
+        }
+    }
+}
+
+
+const clock = new THREE.Clock();
 function animate() {
 
     if ( RESOURCES_LOADED === false){
@@ -698,11 +694,11 @@ function animate() {
         camera.rotation.y - Math.PI,
         camera.rotation.z
     );
+
     const delta = clock.getDelta(); //the time passed since last frame
     mixers.forEach(mixer => mixer.update(delta)); //update the animation respect to the real time(delta)
 
     // Move zombie towards the camera
-
     for (const key in meshes) {
         if (key.startsWith('zombie')) { //check only the mesh that start with zombie that are obviously zombie, so I have all the meshes loaded in mesh without changing anything
             let zombie = meshes[key];
@@ -733,26 +729,27 @@ function animate() {
                     .lookAt(lookAtPosition);
 
                 //zombie collision meshes
-                if(checkCollisionZombieWithMeshes()) { //if this is true the zombie im blocking is the one making this true so the one on which we are updating position
+                if(checkCollisionZombieWithMeshes(capsuleBoundingBoxes.zombie[key].cBBox)) { //if this is true the zombie im blocking is the one making this true so the one on which we are updating position
                     capsuleBoundingBoxes.zombie[key].cBBox.position.copy(actualBoxPos);
                     zombie.position.copy(actualZombiePos);
                 }
                 //zombie collision player
-                if (checkCollisionZombieWithPlayer()){
+                if (checkCollisionZombieWithPlayer(capsuleBoundingBoxes.zombie[key].cBBox)){
                     capsuleBoundingBoxes.zombie[key].cBBox.position.copy(actualBoxPos);
                     zombie.position.copy(actualZombiePos);
 
                     zombie.userData.actions.primary.stop();
                     zombie.userData.actions.secondary.play();
-                    if(capsuleBoundingBoxes.zombie[key].canAttack){
-                        player.hp -= 1;
-                        console.log(`Zombie ha attaccato! Vita del giocatore: ${player.hp}`);
-                        capsuleBoundingBoxes.zombie[key].canAttack = false;
-                        setTimeout(() =>{
-                            capsuleBoundingBoxes.zombie[key].canAttack = true;
-                        },2000);
-                    }
 
+                    //Check if the zombie can attack using timestamp
+                    const currentTime = Date.now();
+                    if(!capsuleBoundingBoxes.zombie[key].lastAttackTime || currentTime - capsuleBoundingBoxes.zombie[key].lastAttackTime  >= 2000){
+                        player.hp -= 1;
+                        console.log(`Zombie attacked! Player HP: ${player.hp}`);
+                        capsuleBoundingBoxes.zombie[key].lastAttackTime = currentTime;
+                        showPlayerHealth(player.hp); //This function is on the html, to show hp when they hit me
+                        //location.reload(); //reload the page when you die. METTI UN POPUP CHE TI OBBLIGA A RELOADDARE ALTRIMENTI ESPLODE TUTTO
+                    }
                 } else{
                     //play the primary animation
                     if (!actions.primary.isRunning()){

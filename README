@@ -243,6 +243,11 @@ it's cooler let it bounce 10 times and after 1 sec like all bullet expire and wi
 added the fact that now when the zombie collides player take damage, also added another animation, just need to understand how to import another one.
 when zombie hit you you take too much damage, but if he collide with a mesh u take 1 damage, see if you can fix it.
 
+26.
+I divided the check of collision of the zombie with the meshes and the player so that now zombie don't hit player running on a block lol.
+Also fixed the problem with action, the problem was that there exist a property on the clipanimation that is .isRunning().
+!actions.primary.isRunning()
+
 potresti anche risolvere semplicemente dicendo che i zombi che rimangono a ballare sono quelli che se ti rihittano ti fanno piu male, pero boh.
 altrimenti potresti mettere che quando ti si mette davanti fa la T pose, tanto quella la fa a prescindere se stoppi
 
