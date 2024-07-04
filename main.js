@@ -422,31 +422,35 @@ function reflectVector(velocity, normal) {
 }
 
 
-function checkCollisionZombieMeshesAndPlayer() {
+function checkCollisionZombieWithMeshes() {
     for (const key in boundingBoxes) {
         for (const key2 in capsuleBoundingBoxes.zombie) {
-            player.bBox.setFromCenterAndSize(camera.position, new THREE.Vector3(1, 2, 1));
             const zombieMesh = capsuleBoundingBoxes.zombie[key2].cBBox;
             const zombieBox = new THREE.Box3().setFromObject(zombieMesh);
             if (boundingBoxes[key].intersectsBox(zombieBox)) {
                 //console.log('zombieBox hitted');
                 return true;
             }
-            if  (player.bBox.intersectsBox(zombieBox)){
-                player.hp -= 1;
-                if(player.hp <= 0){
-                    //console.log(player.hp);
-                    //location.reload(); //reload the page when you die. METTI UN POPUP CHE TI OBBLIGA A RELOADDARE ALTRIMENTI ESPLODE TUTTO
-                }
-                return true;
-            }
-
         }
     }
     return false;
 }
 
-
+function checkCollisionZombieWithPlayer(){
+    for (const key in capsuleBoundingBoxes.zombie) {
+        player.bBox.setFromCenterAndSize(camera.position, new THREE.Vector3(1, 2, 1));
+        const zombieMesh = capsuleBoundingBoxes.zombie[key].cBBox;
+        const zombieBox = new THREE.Box3().setFromObject(zombieMesh);
+        if  (player.bBox.intersectsBox(zombieBox)){
+            player.hp -= 1;
+            if(player.hp <= 0){
+                //console.log(player.hp);
+                //location.reload(); //reload the page when you die. METTI UN POPUP CHE TI OBBLIGA A RELOADDARE ALTRIMENTI ESPLODE TUTTO
+            }
+            return true;
+        }
+    }
+}
 function animate() {
 
     if ( RESOURCES_LOADED === false){
@@ -728,11 +732,15 @@ function animate() {
                 zombie
                     .lookAt(lookAtPosition);
 
-                //zombie collision player
-                if(checkCollisionZombieMeshesAndPlayer()){ //if this is true the zombie im blocking is the one making this true so the one on which we are updating position
+                //zombie collision meshes
+                if(checkCollisionZombieWithMeshes()) { //if this is true the zombie im blocking is the one making this true so the one on which we are updating position
                     capsuleBoundingBoxes.zombie[key].cBBox.position.copy(actualBoxPos);
                     zombie.position.copy(actualZombiePos);
-
+                }
+                //zombie collision player
+                if (checkCollisionZombieWithPlayer()){
+                    capsuleBoundingBoxes.zombie[key].cBBox.position.copy(actualBoxPos);
+                    zombie.position.copy(actualZombiePos);
 
                     zombie.userData.actions.primary.stop();
                     zombie.userData.actions.secondary.play();
@@ -745,7 +753,14 @@ function animate() {
                         },2000);
                     }
 
+                } else{
+                    //play the primary animation
+                    if (!actions.primary.isRunning()){
+                        actions.secondary.stop();
+                        actions.primary.play();
+                    }
                 }
+
                 /* non funziona
                 if(zombie.userData.actions.secondary.play() === true){
                     zombie.userData.actions.secondary.stop();
