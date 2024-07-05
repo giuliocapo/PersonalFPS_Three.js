@@ -252,22 +252,26 @@ potresti anche risolvere semplicemente dicendo che i zombi che rimangono a balla
 altrimenti potresti mettere che quando ti si mette davanti fa la T pose, tanto quella la fa a prescindere se stoppi
 
 
-26.
-ancora da fare step 26
+27.
+finally zombie hit me, the error was hard to see, i was decrementing hp in two part of the code.
+I used currentTime - lastHitTime > 2 secondi to take the other hit from the same zombie.
+I also added a CSS banner that i can show up the hp with javascript code on html and call of that function every time i take an hit.
 
 
 
 FAI VEDERE ALL'ESAME:
 IO HO PRATICAMENTE TUTTE ANIMATION PER TRASFORMATION.
 IMPARA BENE LE FUNZIONI IN TOTALE, CIOè COME FUNZIONA TUTTO IL SISTEMA DI SPARO DA QUANDO CREI LA SFERA MESH E POI CON LA VELOCITA LA SPOSTI FUORI SU ANIMATE
-E POI SE HITTI SUCCEDE QUESTO ECC, UGUALE PER GLI ALTRI "SISTEMI"
+E POI SE HITTI SUCCEDE QUESTO ECC, UGUALE PER GLI ALTRI "SISTEMI" per ripeterla al meglio.
 
 ANIMATION: LOADING SCREEN, PISTOLA INALAZIONE ANIMAZIONE, PROIETTILE CHE PARTE DALLA PISTOLA, CADENZA, RIMBALZI PROIETTILI, SHADOW ECC ECC...
 
-RILEGGI: direction.subVectors(camera.position, zombie.position).normalize();
+RILEGGI:
 
 
-COSA VOGLIO FARE: ZOMBIE CHE FANNO DANNO QUANDO SONO SU DI ME E LA MIA VITA CHE RESTARTA LA PAGINA
-, RICARICA PISTOLA, TERRENO E CASETTA COME IL KING DI 3JS, COMMENTA CON TIPO NUM 1, NUM 2 LE PARTI DEL CODICE
+COSA VOGLIO FARE: RESTARTA LA PAGINA
+, RICARICA PISTOLA = potrei mettere un altra variabile per i colpi in player e ogni volta che clicco la space bar decremente quando sono a zero non entro nella funzione
+per creare i proiettili e devo prima cliccare 'R' che mi fa partire un animazione tipo che ruota sulla linea verticale la pistola davanti a me
+come un cerchio di fuoco, si potrebbe fare, TERRENO E CASETTA COME IL KING DI 3JS, COMMENTA CON TIPO NUM 1, NUM 2 LE PARTI DEL CODICE
 DA FAR VEDERE DURANTE LA PRESENTAZIONE.
 
