@@ -400,7 +400,7 @@ function reflectVector(velocity, normal) {
     //Calculate the dot product of the velocity and the normal that will project the velocity vector on the normal vector
     const dotProduct = velocity.dot(normal);
 
-    //Clone the normal vector and scale it by 2 times the dot product to obtain the component on n, that is what we need.
+    //Clone the normal vector and scale it by 2 times the dot product to obtain the component on n, that is what we need. The multiplication by 2 is done to be sure that the vector is right reflected
     const scaledNormal = normal.clone().multiplyScalar(2 * dotProduct);
 
     //Clone the original velocity vector and subtract the scaled normal from it to obtein the perfect reflected vector
@@ -748,7 +748,12 @@ function animate() {
                         console.log(`Zombie attacked! Player HP: ${player.hp}`);
                         capsuleBoundingBoxes.zombie[key].lastAttackTime = currentTime;
                         showPlayerHealth(player.hp); //This function is on the html, to show hp when they hit me
-                        //location.reload(); //reload the page when you die. METTI UN POPUP CHE TI OBBLIGA A RELOADDARE ALTRIMENTI ESPLODE TUTTO
+
+                        //Show death screen when player health is zero or less
+                        if (player.hp <= 0) {
+                            console.log("You are dead!")
+                            showDeathScreen();
+                        }
                     }
                 } else{
                     //play the primary animation
@@ -757,14 +762,6 @@ function animate() {
                         actions.primary.play();
                     }
                 }
-
-                /* non funziona
-                if(zombie.userData.actions.secondary.play() === true){
-                    zombie.userData.actions.secondary.stop();
-                    zombie.userData.actions.primary.play()
-
-                }*/
-
             }
 
         }
@@ -779,10 +776,14 @@ function animate() {
 
 
 function KeyDown(event) {
-    keyboard[event.keyCode] = true;
+    if(player.hp > 0) { //check if player is alive and so if he can play
+        keyboard[event.keyCode] = true;
+    }
 }
 function KeyUp(event) {
-    keyboard[event.keyCode] = false;
+    if (player.hp > 0){ //check if player is alive and so if he can play
+        keyboard[event.keyCode] = false;
+    }
 }
 
 //listeners when a key is pressed down or pull up.

@@ -56,6 +56,32 @@
             opacity: 0;
             transition: opacity 1s ease-out;
         }
+        #deathScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 1s ease-out;
+            visibility: hidden;
+            z-index: 1001;
+        }
+        #retryButton {
+            padding: 10px 20px;
+            margin-top: 20px;
+            background-color: #444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -72,12 +98,18 @@
 <button id="toggleCenterMarkerButton">Center Marker</button>
 <div id="centerMarker"></div>
 <div id="playerHealth"></div>
+<div id="deathScreen">
+    <h1>UNLUCKY, YOU DIED</h1>
+    <button id="retryButton">RETRY</button>
+</div>
 <script type="module" src="./main.js"></script>
 <script>
     const infoBox = document.getElementById('infoBox');
     const toggleButton = document.getElementById('toggleButton');
     const centerMarker = document.getElementById('centerMarker');
     const toggleCenterMarkerButton = document.getElementById('toggleCenterMarkerButton');
+    const deathScreen = document.getElementById('deathScreen');
+    const retryButton = document.getElementById('retryButton');
 
     // Add toggle button functionality
     toggleButton.addEventListener('click', () => {
@@ -106,6 +138,17 @@
             playerHealthDiv.style.opacity = 0;
         }, 1000); // Time to keep the text visible before fading out
     }
+
+    //show death screen when you die
+    function showDeathScreen() {
+        deathScreen.style.visibility = 'visible';
+        deathScreen.style.opacity = 1;
+    }
+
+    retryButton.addEventListener('click', () => {
+        location.reload(); // Reload the page
+    });
+
 </script>
 </body>
 </html>
