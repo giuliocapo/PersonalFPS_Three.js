@@ -27,7 +27,7 @@ keyboard = {};
 var mixers = [];
 
 //create a player object to hold details about the 'player', such as height and move speed
-var player = { hp: 20, height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 , bBox: null};
+var player = { hp: 2, height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 , bBox: null};
 
 //GUI command for speed and turnspeed
 {
@@ -269,12 +269,12 @@ function init() {
     }
 
     //ZOMBIE creation, fabric, factory
-    const zombieCount = 2;
+    const zombieCount = 6;
 
 
     for (let i = 1; i <= zombieCount; i++) {
         const zombieName = `zombie${i}`;
-        LoadAnimatedModel('zombie/', 'mremireh_o_desbiens.fbx', 'walk.fbx', 'dance.fbx', zombieName, mixers, scene, meshes, loadingManager)
+        LoadAnimatedModel('zombie/', 'Mremireh_O_Desbiens.fbx', 'Walking.fbx', 'Zombie_Attack.fbx', "Moonwalk.fbx", zombieName, mixers, scene, meshes, loadingManager)
             .then(() => {
                 meshes[zombieName].rotation.set(0, Math.PI, 0);
                 const position = getRandomPositionOnEdge(mapSize);
@@ -743,7 +743,7 @@ function animate() {
 
                     //Check if the zombie can attack using timestamp
                     const currentTime = Date.now();
-                    if(!capsuleBoundingBoxes.zombie[key].lastAttackTime || currentTime - capsuleBoundingBoxes.zombie[key].lastAttackTime  >= 2000){
+                    if(!capsuleBoundingBoxes.zombie[key].lastAttackTime || currentTime - capsuleBoundingBoxes.zombie[key].lastAttackTime  >= 2500){
                         player.hp -= 1;
                         console.log(`Zombie attacked! Player HP: ${player.hp}`);
                         capsuleBoundingBoxes.zombie[key].lastAttackTime = currentTime;
@@ -751,6 +751,11 @@ function animate() {
 
                         //Show death screen when player health is zero or less
                         if (player.hp <= 0) {
+                            //play the tertiary animation
+                            if (!actions.tertiary.isRunning()){
+                                actions.secondary.stop();
+                                actions.tertiary.play();
+                            }
                             console.log("You are dead!")
                             showDeathScreen();
                         }

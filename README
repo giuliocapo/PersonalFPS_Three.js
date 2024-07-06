@@ -257,7 +257,9 @@ finally zombie hit me, the error was hard to see, i was decrementing hp in two p
 I used currentTime - lastHitTime > 2 secondi to take the other hit from the same zombie.
 I also added a CSS banner that i can show up the hp with javascript code on html and call of that function every time i take an hit.
 
-
+28.
+added the death screen when the player died adding also the check on the event listener for key pressing so that when you die
+you can't move but you can only click on retry
 
 FAI VEDERE ALL'ESAME:
 IO HO PRATICAMENTE TUTTE ANIMATION PER TRASFORMATION.

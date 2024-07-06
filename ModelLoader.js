@@ -99,7 +99,7 @@ export function addCapsuleOpacityGui(){
     capsuleFolder.open();
 }
 
-export function LoadAnimatedModel(path, mesh, anime1, anime2, key, mixers, scene, meshes, loadingManager) {
+export function LoadAnimatedModel(path, mesh, anime1, anime2, anime3, key, mixers, scene, meshes, loadingManager) {
     return new Promise((resolve, reject) => {
         const loader = new FBXLoader(loadingManager);
         loader.setPath(path);
@@ -114,21 +114,29 @@ export function LoadAnimatedModel(path, mesh, anime1, anime2, key, mixers, scene
             animLoader.load(anime1, (anim) => {
                 const mixer = new THREE.AnimationMixer(fbx);
                 mixers.push(mixer);
+                //Load primary animation
                 const primaryAction = mixer.clipAction(anim.animations[0]);
                 primaryAction.play();
 
-                // Carica l'animazione secondaria
+                //Load secondary animation
                 animLoader.load(anime2, (secondaryAnim) => {
                     const secondaryAction = mixer.clipAction(secondaryAnim.animations[0]);
 
-                    // Salva entrambe le azioni nel userData
+                    //Load tertiary animation
+                    animLoader.load(anime3, (anim3) => {
+                        const tertiaryAction = mixer.clipAction(anim3.animations[0]);
+
+                    //save animations in userData
                     fbx.userData.actions = {
                         primary: primaryAction,
-                        secondary: secondaryAction
+                        secondary: secondaryAction,
+                        tertiary: tertiaryAction
                     };
 
-                    resolve(fbx); // resolve the promise when the two animation are loaded
-                }, undefined, reject); ////manage error for the animation 2 loading, undefined is the third onLoad variable, reject is for OnError
+                        resolve(fbx); //resolve the promise when all three animations are loaded
+                    }, undefined, reject); //manage error for the animation 3 loading, undefined is the third onLoad variable, reject is for OnError
+
+                }, undefined, reject); //manage error for the animation 2 loading, undefined is the third onLoad variable, reject is for OnError
 
             }, undefined, reject); //manage error for the animation 1 loading, undefined is the third onLoad variable, reject is for OnError
 
