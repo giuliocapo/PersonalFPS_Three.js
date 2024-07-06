@@ -11,7 +11,7 @@ import {
 import {LightFarm} from "./LightFarm";
 import {Sky} from "three/addons/objects/Sky.js";
 import {gui} from "./GUIManager";
-import {bulletSound, easterEgg, initAmbientAudio} from "./AudioLoader";
+import {bulletSound, deathSound, easterEgg, initAmbientAudio} from "./AudioLoader";
 
 
 var scene, camera, renderer, mesh;
@@ -19,7 +19,7 @@ var meshFloor;
 
 var boxEasterEggValue = 10, boxEasterEgg, boxTexture, boxNormalMap, boxBumpMap;
 
-var mapSize = 100; // Dimensione della mappa
+var mapSize = 100; //Map dimension
 
 var keyboard;
 keyboard = {};
@@ -98,6 +98,10 @@ var capsuleBoundingBoxes = {
     zombie: {},
 };
 
+var zombieCount;
+
+var loadFinalBoss; //function global so i can call in animate but define in init
+var finalBoss = {};
 
 //Bullets array to hold the bullets
 var bullets = [];
@@ -186,7 +190,7 @@ function init() {
         // watch the loading screen for 5 seconds
         setTimeout(function() {
             console.log("5 seconds have passed!");
-            RESOURCES_LOADED = true;
+            RESOURCES_LOADED = true; //change to false, so let it see after loaded all models, unless will lag forever :s
             onResourcesLoaded();
         }, 5);
     };
@@ -269,7 +273,7 @@ function init() {
     }
 
     //ZOMBIE creation, fabric, factory
-    const zombieCount = 6;
+    zombieCount = 6;
 
 
     for (let i = 1; i <= zombieCount; i++) {
@@ -288,14 +292,26 @@ function init() {
     }
     addCapsuleOpacityGui(); //I invented this type of call to let manage all the capsule opacity together with one folder on GUI
 
+    //load FinalBoss
+    function loadBoss(){
+        const zombieName = `zombie`;
+        LoadAnimatedModel('zombie/', 'Mremireh_O_Desbiens.fbx', 'Walking.fbx', 'Zombie_Attack.fbx', "Moonwalk.fbx", zombieName, mixers, scene, meshes, loadingManager)
+            .then(() => {
+                meshes[zombieName].rotation.set(0, Math.PI, 0);
+                const position = getRandomPositionOnEdge(mapSize);
+                addCapsuleBoundingBox(meshes[zombieName], new THREE.Vector3(0.08, 0.08, 0.08), position, zombieName, scene, capsuleBoundingBoxes);
+                capsuleBoundingBoxes.zombie[zombieName].hp = 50; //added hp integer value to the sub object zombie with name zombie in this case. so now capsuleBoundingBoxes.zombie['zombie'] got mesh and hp.
+                capsuleBoundingBoxes.zombie[zombieName].lastAttackTime = 0;
+            })
+            .catch(error => {
+                console.error('Error loading model or animation:', error);
+            });
+    }
+
+    loadFinalBoss = loadBoss; //to define it global
+
+    //this is the loading of the strange glb mesh
     LoadModel(scene, loadingManager);
-    //LoadModel();
-    //Carica un altro modello animato e avvia l'animazione
-    //LoadAnimatedModelAndPlay(scene, mixers, './resources/zombie/', 'mremireh_o_desbiens.fbx', 'walk.fbx', new THREE.Vector3(0, 0, 0));
-
-    //Carica un modello statico
-
-
 
 
     // Move the camera to 0,player.height,-5 (the Y axis is "up")
@@ -628,6 +644,11 @@ function animate() {
                         scene.remove(meshes[key]);
                         scene.remove(capsuleBoundingBoxes.zombie[key].cBBox);
                         delete capsuleBoundingBoxes.zombie[key]; //unless I continue to hit a 'GHOST' capsule box in that position that blocks my bullets because it was remaining in the array.
+                        zombieCount -= 1;
+                        console.log(zombieCount);
+                        if(zombieCount === 0){
+                            loadFinalBoss();
+                        }
                     }
                 }
             }
@@ -750,13 +771,14 @@ function animate() {
                         showPlayerHealth(player.hp); //This function is on the html, to show hp when they hit me
 
                         //Show death screen when player health is zero or less
-                        if (player.hp <= 0) {
+                        if (player.hp === 0) {
                             //play the tertiary animation
                             if (!actions.tertiary.isRunning()){
                                 actions.secondary.stop();
                                 actions.tertiary.play();
                             }
                             console.log("You are dead!")
+                            deathSound();
                             showDeathScreen();
                         }
                     }

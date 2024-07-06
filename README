@@ -261,6 +261,9 @@ I also added a CSS banner that i can show up the hp with javascript code on html
 added the death screen when the player died adding also the check on the event listener for key pressing so that when you die
 you can't move but you can only click on retry
 
+29.
+changed model fbx of Zombie and changed the animation, added also a tertiary animation that is moonwalk at the moment when I die.
+
 FAI VEDERE ALL'ESAME:
 IO HO PRATICAMENTE TUTTE ANIMATION PER TRASFORMATION.
 IMPARA BENE LE FUNZIONI IN TOTALE, CIOè COME FUNZIONA TUTTO IL SISTEMA DI SPARO DA QUANDO CREI LA SFERA MESH E POI CON LA VELOCITA LA SPOSTI FUORI SU ANIMATE
