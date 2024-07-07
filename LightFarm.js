@@ -5,18 +5,19 @@ export class LightFarm {
         this.scene = scene;
     }
 
-    addAmbientLight(color = 0xffffff, intensity = 0.2) {
+    addAmbientLight(color , intensity) {
         const ambientLight = new THREE.AmbientLight(color, intensity);
+        //ambientLight.castShadow = true;
         this.scene.add(ambientLight);
     }
 
-    addPointLight(color = 0xffffff, intensity = 100, distance = 18, position = { x: -3, y: 6, z: -3 }) {
+    addPointLight(color , intensity, distance , position ) {
         const pointLight = new THREE.PointLight(color, intensity, distance);
         pointLight.position.set(position.x, position.y, position.z);
         pointLight.castShadow = true;
         pointLight.shadow.camera.near = 0.1;
         pointLight.shadow.camera.far = 25;
-        pointLight.shadow.bias = 0.0001;
+       //pointLight.shadow.bias = 0.0001;
         this.scene.add(pointLight);
     }
 }

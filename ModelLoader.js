@@ -149,9 +149,11 @@ export function LoadAnimatedModel(path, mesh, anime1, anime2, anime3, key, mixer
 export function LoadModel(scene, loadingManager) {
     const loader = new GLTFLoader(loadingManager);
     loader.load('thing.glb', (gltf) => {
-        gltf.scene.traverse(c => {
+        gltf.scene.traverse(c => { //.scene to try the THREE.Group
             c.castShadow = true;
         });
+        gltf.scene.position.set(49,0,49);
+        gltf.scene.rotation.set(0, -Math.PI/4, 0);
         scene.add(gltf.scene);
     });
 }

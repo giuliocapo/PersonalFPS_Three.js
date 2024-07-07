@@ -264,6 +264,12 @@ you can't move but you can only click on retry
 29.
 changed model fbx of Zombie and changed the animation, added also a tertiary animation that is moonwalk at the moment when I die.
 
+30.
+added sound of player death and also added the Final boss that is loaded when you kill all the zombies through a
+funcion that i make it global initializing a variable global and making that equal to a function loadBoss() defined in init.
+
+31. devi aggiungere la pagina della vittoria quando 'zombie' che sarebbe il boss finale muore che è lo stesso che dire che lo zombie count va a -1.
+
 FAI VEDERE ALL'ESAME:
 IO HO PRATICAMENTE TUTTE ANIMATION PER TRASFORMATION.
 IMPARA BENE LE FUNZIONI IN TOTALE, CIOè COME FUNZIONA TUTTO IL SISTEMA DI SPARO DA QUANDO CREI LA SFERA MESH E POI CON LA VELOCITA LA SPOSTI FUORI SU ANIMATE

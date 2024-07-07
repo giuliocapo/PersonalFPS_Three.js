@@ -27,7 +27,7 @@ keyboard = {};
 var mixers = [];
 
 //create a player object to hold details about the 'player', such as height and move speed
-var player = { hp: 2, height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 , bBox: null};
+var player = { hp: 20, height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 , bBox: null};
 
 //GUI command for speed and turnspeed
 {
@@ -200,6 +200,7 @@ function init() {
     //texture loader
     var textureLoader = new THREE.TextureLoader(loadingManager);
 
+    //First Mesh Added in the project, i will maintain it till the end
     // A Mesh is made up of a geometry and a material.
     // Materials affect how the geometry looks, especially under lights.
     mesh = new THREE.Mesh(
@@ -207,29 +208,229 @@ function init() {
         new THREE.MeshPhongMaterial({color: 0xff4444, wireframe: USE_WIREFRAME}) // Phong material reacts to the light
     );
 
-    mesh.position.y += 1; // Move the mesh up 1 meter
+    mesh.position.y += 1; //move the mesh up 1 meter
     mesh.receiveShadow = true; //tell the mesh to receive
     mesh.castShadow = true; //tell the mesh to cast shadows
+
+    mesh.position.z -= 5;
+    mesh.position.x += 7;
     // Add the mesh to the scene.
     scene.add(mesh);
 
+    //Floor
+    const floorAlphaTexture  = textureLoader.load('FloorTextures/alpha.jpg');
+    const floorColorTexture = textureLoader.load('FloorTextures/red_laterite_soil_stones_diff_1k.jpg')
+    const floorARMTexture = textureLoader.load('FloorTextures/red_laterite_soil_stones_arm_1k.jpg')//ambient occlusion roughness, metalness
+    const floorNormalTexture= textureLoader.load('FloorTextures/red_laterite_soil_stones_nor_gl_1k.jpg')
+    const floorDisplacementTexture= textureLoader.load('FloorTextures/red_laterite_soil_stones_disp_1k.jpg')
+
+    floorColorTexture.colorSpace = THREE.SRGBColorSpace; //because the color was given in SRGB from the site
+    floorColorTexture.repeat.set(40, 40); //the texture was too small for my floor so i repeate it more times
+    floorColorTexture.wrapS = THREE.RepeatWrapping;
+    floorColorTexture.wrapT = THREE.RepeatWrapping;
+    floorARMTexture.repeat.set(40, 40);
+    floorARMTexture.wrapS = THREE.RepeatWrapping;
+    floorARMTexture.wrapT = THREE.RepeatWrapping;
+    floorNormalTexture.repeat.set(40, 40);
+    floorNormalTexture.wrapS = THREE.RepeatWrapping;
+    floorNormalTexture.wrapT = THREE.RepeatWrapping;
+    floorDisplacementTexture.repeat.set(40, 40);
+    floorDisplacementTexture.wrapS = THREE.RepeatWrapping;
+    floorDisplacementTexture.wrapT = THREE.RepeatWrapping;
+
+
     meshFloor = new THREE.Mesh(
         new THREE.PlaneGeometry(mapSize,mapSize, mapSize,mapSize), //more segments = more polygons, which results in more detail.
-        new THREE.MeshPhongMaterial( {color: 0x8b0000, wireframe: USE_WIREFRAME}), //wireframe is useful to see the true geometry of things.
+        new THREE.MeshStandardMaterial( {
+            transparent: true,
+            //alphaMap: floorAlphaTexture,
+            map: floorColorTexture,
+            aoMap: floorARMTexture,
+            roughnessMap: floorARMTexture,
+            metalnessMap: floorARMTexture,
+            normalMap: floorNormalTexture,
+            displacementMap: floorDisplacementTexture,
+            displacementScale: 1,
+            displacementBias:- 0.250,
+            wireframe: USE_WIREFRAME
+
+        }), //wireframe is useful to see the true geometry of things.
     )
     meshFloor.rotation.x -= Math.PI/2; //rotate the mesh of 90grades x.
     meshFloor.receiveShadow = true; //tell the mesh to receive, the floor doesn't need to cast shadow.
     scene.add( meshFloor );
 
+    gui.add(meshFloor.material, 'displacementScale').min(0).max(1).step(0.001).name('floorDisplacementScale');
+    gui.add(meshFloor.material, 'displacementBias').min(-1).max(1).step(0.001).name('floorDisplacementBias');
+
+    //House Group
+    const house = new THREE.Group(loadingManager); //create a group to create a house mesh that i can modify as a complete object
+    scene.add(house);
+
+    //Walls of the house
+    const wallColorTexture = textureLoader.load('HouseTextures/WallTexture/brick_wall_04_diff_1k.jpg')
+    const wallARMTexture = textureLoader.load('HouseTextures/WallTexture/brick_wall_04_arm_1k.jpg')//ambient occlusion roughness, metalness
+    const wallNormalTexture= textureLoader.load('HouseTextures/WallTexture/brick_wall_04_nor_gl_1k.jpg')
+
+    wallColorTexture.colorSpace = THREE.SRGBColorSpace;
+    const walls = new THREE.Mesh(
+        new THREE.BoxGeometry(4,3,4),
+        new THREE.MeshStandardMaterial({
+            map: wallColorTexture,
+            aoMap: wallARMTexture,
+            roughnessMap: wallARMTexture,
+            metalnessMap: wallARMTexture,
+            normalMap: wallNormalTexture
+        })
+    )
+    walls.position.y += 3/2; //beacuse height is 3 and is half in the floor, 3/2 = 1.5
+    house.add(walls); //add to the house group
+
+    //Rooftop of the House
+    const roofColorTexture = textureLoader.load('HouseTextures/RoofTexture/clay_roof_tiles_diff_1k.jpg')
+    const roofARMTexture = textureLoader.load('HouseTextures/RoofTexture/clay_roof_tiles_arm_1k.jpg')//ambient occlusion roughness, metalness
+    const roofNormalTexture= textureLoader.load('HouseTextures/RoofTexture/clay_roof_tiles_nor_gl_1k.jpg')
+    roofColorTexture.colorSpace = THREE.SRGBColorSpace;
+
+    roofColorTexture.repeat.set(4,1);
+    roofARMTexture.repeat.set(4,1);
+    roofNormalTexture.repeat.set(4,1);
+
+    roofColorTexture.wrapS = THREE.RepeatWrapping;
+    roofARMTexture.wrapS = THREE.RepeatWrapping;
+    roofNormalTexture.wrapS = THREE.RepeatWrapping;
+
+    roofColorTexture.wrapT = THREE.RepeatWrapping;
+    roofARMTexture.wrapT = THREE.RepeatWrapping;
+    roofNormalTexture.wrapT = THREE.RepeatWrapping;
+
+    const rooftop = new THREE.Mesh(
+        new THREE.ConeGeometry(3.5,1.5,4), //created through three.js documentation 3D renderer
+        new THREE.MeshStandardMaterial({
+            map: roofColorTexture,
+            aoMap: roofARMTexture,
+            roughnessMap: roofARMTexture,
+            metalnessMap: roofARMTexture,
+            normalMap: roofNormalTexture
+        })
+    )
+    rooftop.position.y += 3 + (1.5/2); //so i added the height of the wall and half of the height of the cone, because needs to be at the half as the rooftop
+    rooftop.rotation.y += Math.PI /4;
+    house.add(rooftop);
+
+    //Door
+    const  doorColorTexture = textureLoader.load('HouseTextures/DoorTexture/Door_Wood_001_basecolor.jpg');
+    const  doorAmbientOcclusionTexture = textureLoader.load('HouseTextures/DoorTexture/Door_Wood_001_ambientOcclusion.jpg');
+    const  doorHeightTexture = textureLoader.load('HouseTextures/DoorTexture/Door_Wood_001_height.jpg');
+    const  doorMetallicTexture = textureLoader.load('HouseTextures/DoorTexture/Door_Wood_001_metallic.jpg');
+    const  doorNormalTexture = textureLoader.load('HouseTextures/DoorTexture/Door_Wood_001_normal.jpg');
+    const  doorOpacityTexture = textureLoader.load('HouseTextures/DoorTexture/Door_Wood_001_opacity.jpg');
+    const  doorRoughnessTexture = textureLoader.load('HouseTextures/DoorTexture/Door_Wood_001_roughness.jpg');
+
+    doorColorTexture.colorSpace = THREE.SRGBColorSpace;
+
+    const door = new THREE.Mesh(
+        new THREE.PlaneGeometry(2.2, 2.2, 100, 100),
+        new THREE.MeshStandardMaterial({
+            map: doorColorTexture,
+            transparent: true,
+            alphaMap: doorOpacityTexture,
+            aoMap: doorAmbientOcclusionTexture,
+            displacementMap: doorHeightTexture,
+            displacementScale: 3.65,
+            displacementBias: 0.01,
+            normalMap: doorNormalTexture,
+            metalnessMap: doorMetallicTexture,
+            roughnessMap: doorRoughnessTexture
+        })
+    )
+    door.position.y += 1;
+    door.position.z -= 2 + 0.01; //Z FIGHTING the 0.01 is added to avoid that GPU doesn't understand which object is in front of the other, if is the wall or the door
+    door.rotation.y += Math.PI;
+    house.add(door);
+
+    //Bushes
+    const bushColorTexture = textureLoader.load('HouseTextures/BushTexture/leaves_forest_ground_diff_1k.jpg')
+    const bushARMTexture = textureLoader.load('HouseTextures/BushTexture/leaves_forest_ground_arm_1k.jpg')//ambient occlusion roughness, metalness
+    const bushNormalTexture= textureLoader.load('HouseTextures/BushTexture/leaves_forest_ground_nor_gl_1k.jpg')
+    bushColorTexture.colorSpace = THREE.SRGBColorSpace;
+
+    bushColorTexture.repeat.set(2,1);
+    bushARMTexture.repeat.set(2,1);
+    bushNormalTexture.repeat.set(2,1);
+
+    bushColorTexture.wrapS = THREE.RepeatWrapping;
+    bushARMTexture.wrapS = THREE.RepeatWrapping;
+    bushNormalTexture.wrapS = THREE.RepeatWrapping;
+
+    bushColorTexture.wrapT = THREE.RepeatWrapping;
+    bushARMTexture.wrapT = THREE.RepeatWrapping;
+    bushNormalTexture.wrapT = THREE.RepeatWrapping;
+
+    const bushGeometry = new THREE.SphereGeometry(1, 16, 16);
+    const bushMaterial = new THREE.MeshStandardMaterial({
+        map: bushColorTexture,
+        aoMap: bushARMTexture,
+        roughnessMap: bushARMTexture,
+        metalnessMap: bushARMTexture,
+        normalMap: bushNormalTexture
+    });
+
+    const bush1 = new THREE.Mesh(bushGeometry,bushMaterial);
+    bush1.scale.set(0.6, 0.6, 0.6);
+    bush1.position.set(0.8,0.2,2.2);
+    bush1.rotation.x += 0.75; //to cover the imperfection of the texture
+    house.add(bush1);
+
+    const bush2 = new THREE.Mesh(bushGeometry,bushMaterial);
+    bush2.scale.set(0.6, 0.6, 0.6);
+    bush2.position.set(1.44,0.2,-2.2);
+    bush2.rotation.x += 0.75; //to cover the imperfection of the texture
+    house.add(bush2);
+
+    const bush3 = new THREE.Mesh(bushGeometry,bushMaterial);
+    bush3.scale.set(0.25, 0.25, 0.25);
+    bush3.position.set(0.8,0.1,-2.2);
+    bush3.rotation.x += 0.75; //to cover the imperfection of the texture
+    house.add(bush3);
+
+    const bush4 = new THREE.Mesh(bushGeometry,bushMaterial);
+    bush4.scale.set(0.25, 0.25, 0.25);
+    bush4.position.set(-0.8,0.1,2.2);
+    bush4.rotation.x += 0.75; //to cover the imperfection of the texture
+    house.add(bush4);
+
+    const bush5 = new THREE.Mesh(bushGeometry,bushMaterial);
+    bush5.scale.set(0.4, 0.4, 0.4);
+    bush5.position.set(-2,0.2,-2.2);
+    bush5.rotation.x += 0.75; //to cover the imperfection of the texture
+    house.add(bush5);
+
+    //House shadows
+    walls.castShadow = true;
+    walls.receiveShadow = true;
+    rooftop.castShadow = true;
+
+
+    //Directional light
+    const directionalLight = new THREE.PointLight('#86cdff', 1000);
+    directionalLight.position.set(3, 10, -60);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight) ;
+
     // LIGHTS
     const lightFarm = new LightFarm(scene);
     //add light with lightFarm
-    lightFarm.addAmbientLight(0x404040, 0.2);
-    lightFarm.addPointLight(0xffffff, 100, 18, { x: -3, y: 6, z: -3 });
+    lightFarm.addAmbientLight('#86cdff', 0.220);
+    const doorLight = new THREE.PointLight('#ff7d46', 7);
+    doorLight.castShadow = true;
+    doorLight.position.set(0, 3, -2.4);
+    house.add(doorLight);
+    //lightFarm.addPointLight(0xffffff, 100, 18, { x: 0, y: 6, z: 0 });
     lightFarm.addPointLight(0xffffff, 100, 18, { x: 40, y: 6, z: 40 });
-    lightFarm.addPointLight(0xffffff, 100, 18, { x: -40, y: 6, z: 40 });
-    lightFarm.addPointLight(0xffffff, 100, 18, { x: 40, y: 6, z: -40 });
-    lightFarm.addPointLight(0xffffff, 100, 18, { x: -40, y: 6, z: -40 });
+    //lightFarm.addPointLight(0xffffff, 100, 18, { x: -40, y: 6, z: 40 });
+    // lightFarm.addPointLight(0xffffff, 100, 18, { x: 40, y: 6, z: -40 });
+    // lightFarm.addPointLight(0xffffff, 100, 18, { x: -40, y: 6, z: -40 });
 
 
     //boxEasterEgg
@@ -250,14 +451,14 @@ function init() {
         scene.add(boxEasterEgg);
         boxEasterEgg.receiveShadow = true;
         boxEasterEgg.castShadow = true;
-        const positionEasterEgg = getRandomPositionOnEdge(mapSize);
+        const positionEasterEgg = new THREE.Vector3(45,0,45);
         boxEasterEgg.position.copy(positionEasterEgg);
         boxEasterEgg.position.y = 1.5; //CHANGE THIS TO LET PROF SEE THE MAPPING DONE ON THIS OBJECT
     }
 
 
     //LOAD MODELS
-    loadModels(models, loadingManager);
+    loadModels(models, loadingManager); //for gltf object
 
     //Function to obtain a casual position on the sides of the floor.
     function getRandomPositionOnEdge(mapSize) {
@@ -364,24 +565,24 @@ function onResourcesLoaded(){
     meshes["cliff_block_rock6"] = models.cliff_block_rock.mesh.clone();
 
     // Add bounding boxes and add to scene
-    addBoundingBox(meshes["tent1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(0, 0, 4), 'tent1', scene, boundingBoxes);
+    addBoundingBox(meshes["tent1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(38, 0, 45), 'tent1', scene, boundingBoxes);
+    meshes["tent1"].rotation.y += Math.PI
     scene.add(meshes["tent1"]);
 
-    addBoundingBox(meshes["tent2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-5, 0, 4), 'tent2', scene, boundingBoxes);
-    scene.add(meshes["tent2"]);
-
-    addBoundingBox(meshes["campfire1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-1, 0, 1), 'campfire1', scene, boundingBoxes);
+    addBoundingBox(meshes["campfire1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(38, 0, 40), 'campfire1', scene, boundingBoxes);
     scene.add(meshes["campfire1"]);
 
-    addBoundingBox(meshes["campfire2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-1, 0, 1), 'campfire2', scene, boundingBoxes);
+    addBoundingBox(meshes["tent2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-38, 0, -45), 'tent2', scene, boundingBoxes);
+    scene.add(meshes["tent2"]);
+
+    addBoundingBox(meshes["campfire2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-38, 0, -40), 'campfire2', scene, boundingBoxes);
     scene.add(meshes["campfire2"]);
 
-    addBoundingBox(meshes["cliff_block_rock"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-11, -1, 1), 'cliff_block_rock', scene, boundingBoxes);
-    scene.add(meshes["cliff_block_rock"]);
+    //addBoundingBox(meshes["cliff_block_rock"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-11, -1, 1), 'cliff_block_rock', scene, boundingBoxes);
+    //scene.add(meshes["cliff_block_rock"]);
 
-
-    addBoundingBox(meshes["cliff_block_rock"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-11, -1, 1), 'cliff_block_rock', scene, boundingBoxes);
-    scene.add(meshes["cliff_block_rock"]);
+    //addBoundingBox(meshes["cliff_block_rock"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-11, -1, 1), 'cliff_block_rock', scene, boundingBoxes);
+    //scene.add(meshes["cliff_block_rock"]);
 
     //TRYING CASUAL CREATION OF MAP
     function getRandomPosition(maxX, maxY, maxZ) {
