@@ -17,6 +17,13 @@ import {bulletSound, deathSound, easterEgg, initAmbientAudio} from "./AudioLoade
 var scene, camera, renderer, mesh;
 var meshFloor;
 
+//ghost
+var spotLight;
+var sphereGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+var sphereMaterial = new THREE.MeshBasicMaterial({ color: '#8f00ff' });
+var ghostLight = new THREE.Mesh(sphereGeometry, sphereMaterial);
+
+
 var boxEasterEggValue = 10, boxEasterEgg, boxTexture, boxNormalMap, boxBumpMap;
 
 var mapSize = 100; //Map dimension
@@ -25,6 +32,8 @@ var keyboard;
 keyboard = {};
 
 var mixers = [];
+
+
 
 //create a player object to hold details about the 'player', such as height and move speed
 var player = { hp: 20, height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 , bBox: null};
@@ -413,10 +422,24 @@ function init() {
 
 
     //Directional light
-    const directionalLight = new THREE.PointLight('#86cdff', 1000);
+    const directionalLight = new THREE.DirectionalLight('#86cdff', 1);
     directionalLight.position.set(3, 10, -60);
     directionalLight.castShadow = true;
-    scene.add(directionalLight) ;
+    //scene.add(directionalLight) ;
+
+    //
+    spotLight = new THREE.SpotLight( '#86cdff', 100 );
+    spotLight.position.y = 3;
+    spotLight.castShadow = true;
+    scene.add(spotLight);
+    scene.add(ghostLight);
+
+    //Hemisphere light
+    const light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+    const helper = new THREE.HemisphereLightHelper( light, 5 );
+    light.castShadow = true;
+    //scene.add( helper );
+    //scene.add(light);
 
     // LIGHTS
     const lightFarm = new LightFarm(scene);
@@ -686,8 +709,20 @@ function animate() {
     }
 
 
-    requestAnimationFrame(animate); // Tells the browser to smoothly render at 60Hz
+    requestAnimationFrame(animate); //Tells the browser to smoothly render at 60Hz
 
+    //Ghost
+    //calculate new spotlight position
+    const ghostTiming = Date.now() * 0.001; //time in seconds
+    const radius = 45;
+    const speed = 0.5;
+
+
+    spotLight.position.x = radius * Math.sin(ghostTiming * speed); //t * sin(teta) teta is the angle that change over time
+    spotLight.position.z = radius * Math.cos(ghostTiming * speed); //r * cos(teta) teta is the angle that change over time
+
+    //sincronize ghost with the spotlight
+    ghostLight.position.copy(spotLight.position);
 
     // Rotate our mesh.
     mesh.rotation.x += 0.01;

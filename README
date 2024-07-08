@@ -270,6 +270,15 @@ funcion that i make it global initializing a variable global and making that equ
 
 31. devi aggiungere la pagina della vittoria quando 'zombie' che sarebbe il boss finale muore che è lo stesso che dire che lo zombie count va a -1.
 
+32.
+adjusted meshes like tent and easter egg in the corners of the map. I built the house with all mapping for all textures,
+i created an object that is the father that i added into the scene and then all added to that object. The door got Z FIGHTING fixed it.
+also changed light, light farm useless right now,
+need to refine the shadow because the light is too far so now you can't really see the shadow in a good way, too much pixel.
+
+33.
+change light system, added ghost light that is a spotlight
+
 FAI VEDERE ALL'ESAME:
 IO HO PRATICAMENTE TUTTE ANIMATION PER TRASFORMATION.
 IMPARA BENE LE FUNZIONI IN TOTALE, CIOè COME FUNZIONA TUTTO IL SISTEMA DI SPARO DA QUANDO CREI LA SFERA MESH E POI CON LA VELOCITA LA SPOSTI FUORI SU ANIMATE
