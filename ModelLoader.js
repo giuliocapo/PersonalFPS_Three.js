@@ -146,14 +146,33 @@ export function LoadAnimatedModel(path, mesh, anime1, anime2, anime3, key, mixer
     });
 }
 
-export function loadGLTFModel(scene, loadingManager) {
+export function loadGLTFModel(scene, url, loadingManager) {
     const loader = new GLTFLoader(loadingManager);
-    loader.load('thing.glb', (gltf) => {
-        gltf.scene.traverse(c => { //.scene to try the THREE.Group
+    loader.load(url, (gltf) => {
+        gltf.scene.traverse((c) => {
             c.castShadow = true;
         });
-        gltf.scene.position.set(49,0,49);
-        gltf.scene.rotation.set(0, -Math.PI/4, 0);
-        scene.add(gltf.scene);
+
+        //original position
+        const original = gltf.scene;
+        original.position.set(49, 0, 49);
+        original.rotation.set(0, -Math.PI / 4, 0);
+        scene.add(original);
+
+        //clone the same mesh in the other corners
+        const clone1 = original.clone();
+        clone1.position.set(-49, 0, 49);
+        clone1.rotation.set(0, (-Math.PI/4) + (Math.PI / 2) - Math.PI , 0);
+        scene.add(clone1);
+
+        const clone2 = original.clone();
+        clone2.position.set(49, 0, -49);
+        clone2.rotation.set(0, (Math.PI / 4) , 0);
+        scene.add(clone2);
+
+        const clone3 = original.clone();
+        clone3.position.set(-49, 0, -49);
+        clone3.rotation.set(0, ((Math.PI) / 4) + Math.PI/2, 0);
+        scene.add(clone3);
     });
 }

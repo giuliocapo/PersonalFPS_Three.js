@@ -104,6 +104,7 @@ var models = {
 //Meshes object to index and will store every object appears in the scene indexed by a key
 var meshes = {}
 
+
 // BoundingBoxes object to store the bounding boxes of the meshes and PLAYER
 var boundingBoxes = {};
 
@@ -518,7 +519,7 @@ function init() {
     loadFinalBoss = loadBoss; //to define it global
 
     //this is the loading of the strange GLTF mesh
-    loadGLTFModel(scene, loadingManager);
+    loadGLTFModel(scene, 'thing.glb', loadingManager);
 
 
     // Move the camera to 0,player.height,-5 (the Y axis is "up")
@@ -570,19 +571,29 @@ function onResourcesLoaded(){
     meshes["cliff_block_rock5"] = models.cliff_block_rock.mesh.clone();
     meshes["cliff_block_rock6"] = models.cliff_block_rock.mesh.clone();
 
-    // Add bounding boxes and add to scene
+    //Add bounding boxes and add to scene
+
+    //Safe corner spot
+    const safeCornerSpot = new THREE.Group();
+    scene.add(safeCornerSpot);
+
     addBoundingBox(meshes["tent1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(38, 0, 45), 'tent1', scene, boundingBoxes);
     meshes["tent1"].rotation.y += Math.PI
-    scene.add(meshes["tent1"]);
+    safeCornerSpot.add(meshes["tent1"]);
 
     addBoundingBox(meshes["campfire1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(38, 0, 40), 'campfire1', scene, boundingBoxes);
-    scene.add(meshes["campfire1"]);
+    safeCornerSpot.add(meshes["campfire1"]);
 
     addBoundingBox(meshes["tent2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-38, 0, -45), 'tent2', scene, boundingBoxes);
-    scene.add(meshes["tent2"]);
+    safeCornerSpot.add(meshes["tent2"]);
 
     addBoundingBox(meshes["campfire2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-38, 0, -40), 'campfire2', scene, boundingBoxes);
-    scene.add(meshes["campfire2"]);
+    safeCornerSpot.add(meshes["campfire2"]);
+
+    //clone the safe spot and put in the other corners
+    const safeCornerSpot2 = safeCornerSpot.clone();
+    safeCornerSpot2.position.set(-80, 0, 0); //new position of cloned safe spot
+    scene.add(safeCornerSpot2);
 
 
     //TRYING CASUAL CREATION OF MAP

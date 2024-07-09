@@ -280,6 +280,17 @@ need to refine the shadow because the light is too far so now you can't really s
 33.
 change light system, added ghost light that is a spotlight
 
+34.
+added positionRandomizer.js to clean the code. Also right commented the loadModel function to load all simple meshes from model.
+
+35.
+cloned the safe spot using Three.group (original is north-west) in the right corner. the thing.glb has been cloned in the modelLoader.js this because
+need to be loaded with loader manager. so it's better like this for performance.
+
+36.
+LEGGI SOTTO CHE DEVI FA
+
+
 FAI VEDERE ALL'ESAME:
 IO HO PRATICAMENTE TUTTE ANIMATION PER TRASFORMATION.
 IMPARA BENE LE FUNZIONI IN TOTALE, CIOè COME FUNZIONA TUTTO IL SISTEMA DI SPARO DA QUANDO CREI LA SFERA MESH E POI CON LA VELOCITA LA SPOSTI FUORI SU ANIMATE
@@ -291,7 +302,7 @@ RILEGGI:
 
 
 COSA VOGLIO FARE: RESTARTA LA PAGINA
-, RICARICA PISTOLA = potrei mettere un altra variabile per i colpi in player e ogni volta che clicco la space bar decremente quando sono a zero non entro nella funzione
+DEVI AGGIUNGERE UN SAFE SPOT PIU CARINO CON LA LUCE, METTERE SUONO ALLA MORTE DEGLI ZOMBIE, METTERE FANTASMI LUCI PER TERRA, RICARICA PISTOLA = potrei mettere un altra variabile per i colpi in player e ogni volta che clicco la space bar decremente quando sono a zero non entro nella funzione
 per creare i proiettili e devo prima cliccare 'R' che mi fa partire un animazione tipo che ruota sulla linea verticale la pistola davanti a me
 come un cerchio di fuoco, si potrebbe fare, TERRENO E CASETTA COME IL KING DI 3JS, COMMENTA CON TIPO NUM 1, NUM 2 LE PARTI DEL CODICE
 DA FAR VEDERE DURANTE LA PRESENTAZIONE.
