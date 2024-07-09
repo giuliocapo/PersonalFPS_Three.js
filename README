@@ -177,7 +177,8 @@ if (meshes["zombie"]) {
 
 13.
 Finally when we hit the zombie we get 'zombie' hitted. the problem to fix was to create a Three.box3 setting its dimension with
-new THREE.Box3().setFromObject(capsuleBoundingBoxes[key]); after that check the intersection.
+new THREE.Box3().setFromObject(capsuleBoundingBoxes[key]); after that check the intersection. questo perchè se nn avessi fatto io la capsula
+fare la boundingbox diretto sul modello veniva un rettangolone gigante
 
 14.
 i completely changed the capsulBoundingBox structure adding a sub structure zombie that will have a capsuleboundingbox and some hp, for now the mesh is in the meshes structure with all the meshes.

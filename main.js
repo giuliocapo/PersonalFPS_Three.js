@@ -88,6 +88,11 @@ var models = {
         mesh: null,
 
     },
+    crop_pumpkin: {
+        obj: "Models/OBJ format/crop_pumpkin.obj",
+        mtl: "Models/OBJ format/crop_pumpkin.mtl",
+        mesh: null,
+    },
     pistol: {
         obj: "Models/OBJ weapons/uziLong.obj",
         mtl: "Models/OBJ weapons/uziLong.mtl",
@@ -210,8 +215,8 @@ function init() {
     var textureLoader = new THREE.TextureLoader(loadingManager);
 
     //First Mesh Added in the project, i will maintain it till the end
-    // A Mesh is made up of a geometry and a material.
-    // Materials affect how the geometry looks, especially under lights.
+    //A Mesh is made up of a geometry and a material.
+    //Materials affect how the geometry looks, especially under lights.
     mesh = new THREE.Mesh(
         new THREE.BoxGeometry(1, 1, 1), // width, height, depth
         new THREE.MeshPhongMaterial({color: 0xff4444, wireframe: USE_WIREFRAME}) // Phong material reacts to the light
@@ -274,6 +279,7 @@ function init() {
 
     //House Group
     const house = new THREE.Group(loadingManager); //create a group to create a house mesh that i can modify as a complete object
+    house.scale.set(2,2,2);
     scene.add(house);
 
     //Walls of the house
@@ -421,39 +427,30 @@ function init() {
     rooftop.castShadow = true;
 
 
-    //Directional light
-    const directionalLight = new THREE.DirectionalLight('#86cdff', 1);
-    directionalLight.position.set(3, 10, -60);
-    directionalLight.castShadow = true;
-    //scene.add(directionalLight) ;
 
-    //
+    // LIGHTS
+    const lightFarm = new LightFarm(scene);
+
+    //ghostLight
     spotLight = new THREE.SpotLight( '#86cdff', 100 );
     spotLight.position.y = 3;
     spotLight.castShadow = true;
     scene.add(spotLight);
     scene.add(ghostLight);
 
-    //Hemisphere light
-    const light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
-    const helper = new THREE.HemisphereLightHelper( light, 5 );
-    light.castShadow = true;
-    //scene.add( helper );
-    //scene.add(light);
 
-    // LIGHTS
-    const lightFarm = new LightFarm(scene);
     //add light with lightFarm
     lightFarm.addAmbientLight('#86cdff', 0.220);
-    const doorLight = new THREE.PointLight('#ff7d46', 7);
-    doorLight.castShadow = true;
-    doorLight.position.set(0, 3, -2.4);
+
+    const doorLight = lightFarm.addPointLight('#ff7d46', 7, new THREE.Vector3(0, 3, -2.4));
     house.add(doorLight);
-    //lightFarm.addPointLight(0xffffff, 100, 18, { x: 0, y: 6, z: 0 });
-    lightFarm.addPointLight(0xffffff, 100, 18, { x: 40, y: 6, z: 40 });
-    //lightFarm.addPointLight(0xffffff, 100, 18, { x: -40, y: 6, z: 40 });
-    // lightFarm.addPointLight(0xffffff, 100, 18, { x: 40, y: 6, z: -40 });
-    // lightFarm.addPointLight(0xffffff, 100, 18, { x: -40, y: 6, z: -40 });
+
+    //corner light
+    const cornerLight1 = lightFarm.addPointLight('#ff7d46', 7, new THREE.Vector3( 40,  6, 40));
+    const cornerLight2 = lightFarm.addPointLight('#ff7d46', 7, new THREE.Vector3( -40,  6, 40));
+    const cornerLight3 = lightFarm.addPointLight('#ff7d46', 7, new THREE.Vector3( 40,  6, -40));
+    const cornerLight4 = lightFarm.addPointLight('#ff7d46', 7, new THREE.Vector3( -40,  6, -40));
+    scene.add(cornerLight1,cornerLight2,cornerLight3,cornerLight4);
 
 
     //boxEasterEgg
@@ -556,8 +553,7 @@ function init() {
 
 
 
-
-
+    //renderer
     renderer = new THREE.WebGLRenderer({ antialias: true }); // Ensure correct initialization of WebGLRenderer, antialiasing true to correct corner errors.
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
@@ -581,6 +577,7 @@ function onResourcesLoaded(){
     meshes["campfire1"] = models.campfire_stones.mesh.clone();
     meshes["campfire2"] = models.campfire_stones.mesh.clone();
     meshes["cliff_block_rock"] = models.cliff_block_rock.mesh.clone();
+    meshes["cliff_block_rock1"] = models.cliff_block_rock.mesh.clone();
     meshes["cliff_block_rock2"] = models.cliff_block_rock.mesh.clone();
     meshes["cliff_block_rock3"] = models.cliff_block_rock.mesh.clone();
     meshes["cliff_block_rock4"] = models.cliff_block_rock.mesh.clone();
@@ -601,11 +598,6 @@ function onResourcesLoaded(){
     addBoundingBox(meshes["campfire2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-38, 0, -40), 'campfire2', scene, boundingBoxes);
     scene.add(meshes["campfire2"]);
 
-    //addBoundingBox(meshes["cliff_block_rock"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-11, -1, 1), 'cliff_block_rock', scene, boundingBoxes);
-    //scene.add(meshes["cliff_block_rock"]);
-
-    //addBoundingBox(meshes["cliff_block_rock"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-11, -1, 1), 'cliff_block_rock', scene, boundingBoxes);
-    //scene.add(meshes["cliff_block_rock"]);
 
     //TRYING CASUAL CREATION OF MAP
     function getRandomPosition(maxX, maxY, maxZ) {
@@ -615,7 +607,7 @@ function onResourcesLoaded(){
             Math.random() * maxZ - maxZ / 2  //casual z starting from the center
         );
     }
-    for (let i = 2; i <= 6; i++) {
+    for (let i = 1; i <= 6; i++) {
         const meshName = `cliff_block_rock${i}`;
         const position = getRandomPosition(100, 0, 100);
         addBoundingBox(meshes[meshName], new THREE.Vector3(5, 5, 5), position, `cliff_block_rock${i}`, scene, boundingBoxes);
@@ -966,15 +958,15 @@ function animate() {
                 direction.subVectors(camera.position, zombie.position).normalize(); //Calculate the direction towards the camera, using normalize to make the vector be of unit 1 and maintain the direction
 
                 //Setup zombies' velocity
-                const speed = 1.6;
+                const zombieSpeed = 3.6;
 
                 const actualBoxPos = capsuleBoundingBoxes.zombie[key].cBBox.position.clone();
                 const actualZombiePos = zombie.position.clone();
                 //Update the position of the zombie only on X and Z to let him walk on the Y = 0 (ground)
-                zombie.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta); //speed * delta si to make it consistent with the update of animation respect to delta
+                zombie.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), zombieSpeed * delta); //speed * delta si to make it consistent with the update of animation respect to delta
 
                 //Update the position of the capsuleBoundingBox only on X and Z
-                capsuleBoundingBoxes.zombie[key].cBBox.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), speed * delta);
+                capsuleBoundingBoxes.zombie[key].cBBox.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), zombieSpeed * delta);
 
                 //******************LEGGI**********
                 //QUI FAI LA COLLISIONE DEL TIPO SALVI LA POS DI PRIMA SE LA BOUNDING TOCCA UNA MESH ZOMBIE TORNI ALLA POSIZIONE DI PRIMA
