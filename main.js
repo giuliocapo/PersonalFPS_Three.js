@@ -5,13 +5,14 @@ import {
     addCapsuleBoundingBox,
     addCapsuleOpacityGui,
     LoadAnimatedModel,
-    LoadModel,
+    loadGLTFModel,
     loadModels
 } from "./ModelLoader";
 import {LightFarm} from "./LightFarm";
 import {Sky} from "three/addons/objects/Sky.js";
 import {gui} from "./GUIManager";
 import {bulletSound, deathSound, easterEgg, initAmbientAudio} from "./AudioLoader";
+import {getRandomPosition, getRandomPositionOnEdge} from "./positionRandomizer";
 
 
 var scene, camera, renderer, mesh;
@@ -57,7 +58,7 @@ var loadingScreen = {
     camera: new THREE.PerspectiveCamera(90, window.innerWidth/window.innerHeight, 0.1, 100),
     box: new THREE.Mesh(
         new THREE.BoxGeometry(0.5, 0.5, 0.5),
-        new THREE.MeshBasicMaterial({color: 0x4444ff}),
+        new THREE.MeshBasicMaterial({color: 0x4444ff})
     )
 }
 //loading animation variables
@@ -206,7 +207,7 @@ function init() {
             console.log("5 seconds have passed!");
             RESOURCES_LOADED = true; //change to false, so let it see after loaded all models, unless will lag forever :s
             onResourcesLoaded();
-        }, 5);
+        }, 5000);
     };
 
 
@@ -427,7 +428,6 @@ function init() {
     rooftop.castShadow = true;
 
 
-
     // LIGHTS
     const lightFarm = new LightFarm(scene);
 
@@ -476,26 +476,12 @@ function init() {
         boxEasterEgg.position.y = 1.5; //CHANGE THIS TO LET PROF SEE THE MAPPING DONE ON THIS OBJECT
     }
 
-
     //LOAD MODELS
-    loadModels(models, loadingManager); //for gltf object
+    loadModels(models, loadingManager); //load the mesh (obj, mtl) and then store them in meshes at the corresponding key
 
-    //Function to obtain a casual position on the sides of the floor.
-    function getRandomPositionOnEdge(mapSize) {
-        const edge = Math.floor(Math.random() * 4);
-        const offset = (Math.random() - 0.5) * mapSize;
-        switch (edge) {
-            case 0: return new THREE.Vector3(-mapSize / 2, 0, offset); //left side
-            case 1: return new THREE.Vector3(mapSize / 2, 0, offset);  //right side
-            case 2: return new THREE.Vector3(offset, 0, -mapSize / 2); //south side
-            case 3: return new THREE.Vector3(offset, 0, mapSize / 2);  //north side
-            default: return new THREE.Vector3(0, 0, 0);
-        }
-    }
 
     //ZOMBIE creation, fabric, factory
     zombieCount = 6;
-
 
     for (let i = 1; i <= zombieCount; i++) {
         const zombieName = `zombie${i}`;
@@ -531,8 +517,8 @@ function init() {
 
     loadFinalBoss = loadBoss; //to define it global
 
-    //this is the loading of the strange glb mesh
-    LoadModel(scene, loadingManager);
+    //this is the loading of the strange GLTF mesh
+    loadGLTFModel(scene, loadingManager);
 
 
     // Move the camera to 0,player.height,-5 (the Y axis is "up")
@@ -600,13 +586,7 @@ function onResourcesLoaded(){
 
 
     //TRYING CASUAL CREATION OF MAP
-    function getRandomPosition(maxX, maxY, maxZ) {
-        return new THREE.Vector3(
-            Math.random() * maxX - maxX / 2, //casual x starting from the center
-            Math.random() * maxY - maxY / 2, //casual y starting from the center
-            Math.random() * maxZ - maxZ / 2  //casual z starting from the center
-        );
-    }
+
     for (let i = 1; i <= 6; i++) {
         const meshName = `cliff_block_rock${i}`;
         const position = getRandomPosition(100, 0, 100);
@@ -624,7 +604,6 @@ function onResourcesLoaded(){
 
 
 }
-
 
 
 //function to calculate the reflected vector for collision with the meshes (bounce)
