@@ -288,7 +288,14 @@ cloned the safe spot using Three.group (original is north-west) in the right cor
 need to be loaded with loader manager. so it's better like this for performance.
 
 36.
-LEGGI SOTTO CHE DEVI FA
+added constraints with graveyard //CONSTRAINTS OF THE MAP.
+ZOMBIE NOW spaw out of the graveyard so seems they rebirth lol.
+const position = getRandomPositionOnEdge(mapSize + 50); //let the zombie spawn out of the graveyard
+also added the exception for the graveyard for the collision with the zombies.
+// Skip collision check for GraveFree (graveyard)
+if (key.includes('GraveFree')) {
+continue;
+} so that now u can hit the zombie only when they join "YOUR MAP"
 
 
 FAI VEDERE ALL'ESAME:
@@ -302,7 +309,7 @@ RILEGGI:
 
 
 COSA VOGLIO FARE: RESTARTA LA PAGINA
-DEVI AGGIUNGERE UN SAFE SPOT PIU CARINO CON LA LUCE, METTERE SUONO ALLA MORTE DEGLI ZOMBIE, METTERE FANTASMI LUCI PER TERRA, RICARICA PISTOLA = potrei mettere un altra variabile per i colpi in player e ogni volta che clicco la space bar decremente quando sono a zero non entro nella funzione
+DEVI AGGIUNGERE UN SAFE SPOT PIU CARINO CON LA LUCE, , METTERE FANTASMI LUCI PER TERRA, RICARICA PISTOLA = potrei mettere un altra variabile per i colpi in player e ogni volta che clicco la space bar decremente quando sono a zero non entro nella funzione
 per creare i proiettili e devo prima cliccare 'R' che mi fa partire un animazione tipo che ruota sulla linea verticale la pistola davanti a me
 come un cerchio di fuoco, si potrebbe fare, TERRENO E CASETTA COME IL KING DI 3JS, COMMENTA CON TIPO NUM 1, NUM 2 LE PARTI DEL CODICE
 DA FAR VEDERE DURANTE LA PRESENTAZIONE.

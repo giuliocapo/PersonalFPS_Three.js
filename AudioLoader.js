@@ -72,6 +72,31 @@ export function deathSound(){
         deathSound.play();
     });
 }
+
+export function randomDeathZombieSound() {
+    //Create a new audio source
+    const deathSound = new THREE.Audio(listener);
+
+    //Create an AudioLoader to load the audio files
+    const loader = new THREE.AudioLoader();
+
+    //Array of sound file paths
+    const soundFiles = ['music/zombie-death-2.mp3', 'music/Zombie-In-Pain-Sound.mp3'];
+
+    // Select a random sound file from the array
+    const randomIndex = Math.floor(Math.random() * soundFiles.length); //I added also the soundFile.lenght to give more randomicity (random algorithm aren't so good)
+    const selectedSound = soundFiles[randomIndex];
+
+    //Load the selected sound and play it once it is ready
+    loader.load(selectedSound, (buffer) => {
+        //this is the callback function that will execute once the audio file is loaded
+
+        //Set the loaded audio buffer to the audio source
+        deathSound.setBuffer(buffer);
+        deathSound.setVolume(1);
+        deathSound.play();
+    });
+}
 //Easter egg function when you do something on the map launch this function killing the ambient sound inserting THE ZOMBIE SONG
 export function easterEgg(){
     //Create a new audio source

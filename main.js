@@ -11,7 +11,7 @@ import {
 import {LightFarm} from "./LightFarm";
 import {Sky} from "three/addons/objects/Sky.js";
 import {gui} from "./GUIManager";
-import {bulletSound, deathSound, easterEgg, initAmbientAudio} from "./AudioLoader";
+import {bulletSound, deathSound, easterEgg, initAmbientAudio, randomDeathZombieSound} from "./AudioLoader";
 import {getRandomPosition, getRandomPositionOnEdge} from "./positionRandomizer";
 
 
@@ -898,6 +898,7 @@ function animate() {
                         scene.remove(capsuleBoundingBoxes.zombie[key].cBBox);
                         delete capsuleBoundingBoxes.zombie[key]; //unless I continue to hit a 'GHOST' capsule box in that position that blocks my bullets because it was remaining in the array.
                         zombieCount -= 1;
+                        randomDeathZombieSound();
                         console.log(zombieCount);
                         if(zombieCount === 0){
                             loadFinalBoss();
