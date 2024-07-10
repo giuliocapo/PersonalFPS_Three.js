@@ -94,6 +94,11 @@ var models = {
         mtl: "Models/OBJ format/crop_pumpkin.mtl",
         mesh: null,
     },
+    GraveFree:{
+        obj: "Models/OBJ format/GraveFree.obj",
+        mtl: "Models/OBJ format/GraveFree.mtl",
+        mesh: null,
+    },
     pistol: {
         obj: "Models/OBJ weapons/uziLong.obj",
         mtl: "Models/OBJ weapons/uziLong.mtl",
@@ -489,7 +494,7 @@ function init() {
         LoadAnimatedModel('zombie/', 'Mremireh_O_Desbiens.fbx', 'Walking.fbx', 'Zombie_Attack.fbx', "Moonwalk.fbx", zombieName, mixers, scene, meshes, loadingManager)
             .then(() => {
                 meshes[zombieName].rotation.set(0, Math.PI, 0);
-                const position = getRandomPositionOnEdge(mapSize);
+                const position = getRandomPositionOnEdge(mapSize + 50); //let the zombie spawn out of the graveyard
                 addCapsuleBoundingBox(meshes[zombieName], new THREE.Vector3(0.02, 0.02, 0.02), position, zombieName, scene, capsuleBoundingBoxes);
                 capsuleBoundingBoxes.zombie[zombieName].hp = 5; //added hp integer value to the sub object zombie with name zombie in this case. so now capsuleBoundingBoxes.zombie['zombie'] got mesh and hp.
                 capsuleBoundingBoxes.zombie[zombieName].lastAttackTime = 0;
@@ -563,6 +568,12 @@ function onResourcesLoaded(){
     meshes["tent2"] = models.tent.mesh.clone();
     meshes["campfire1"] = models.campfire_stones.mesh.clone();
     meshes["campfire2"] = models.campfire_stones.mesh.clone();
+    meshes["crop_pumpkin"] = models.crop_pumpkin.mesh.clone();
+    meshes["GraveFree0"] = models.GraveFree.mesh.clone();
+    meshes["GraveFree1"] = models.GraveFree.mesh.clone();
+    meshes["GraveFree2"] = models.GraveFree.mesh.clone();
+    meshes["GraveFree3"] = models.GraveFree.mesh.clone();
+
     meshes["cliff_block_rock"] = models.cliff_block_rock.mesh.clone();
     meshes["cliff_block_rock1"] = models.cliff_block_rock.mesh.clone();
     meshes["cliff_block_rock2"] = models.cliff_block_rock.mesh.clone();
@@ -584,25 +595,45 @@ function onResourcesLoaded(){
     addBoundingBox(meshes["campfire1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(38, 0, 40), 'campfire1', scene, boundingBoxes);
     safeCornerSpot.add(meshes["campfire1"]);
 
-    addBoundingBox(meshes["tent2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-38, 0, -45), 'tent2', scene, boundingBoxes);
-    safeCornerSpot.add(meshes["tent2"]);
+    addBoundingBox(meshes["crop_pumpkin"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(40, 0, 40), 'crop_pumpkin', scene, boundingBoxes);
+    safeCornerSpot.add(meshes["crop_pumpkin"]);
 
-    addBoundingBox(meshes["campfire2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-38, 0, -40), 'campfire2', scene, boundingBoxes);
-    safeCornerSpot.add(meshes["campfire2"]);
 
     //clone the safe spot and put in the other corners
     const safeCornerSpot2 = safeCornerSpot.clone();
     safeCornerSpot2.position.set(-80, 0, 0); //new position of cloned safe spot
     scene.add(safeCornerSpot2);
 
-
-    //TRYING CASUAL CREATION OF MAP
-
     for (let i = 1; i <= 6; i++) {
         const meshName = `cliff_block_rock${i}`;
         const position = getRandomPosition(100, 0, 100);
         addBoundingBox(meshes[meshName], new THREE.Vector3(5, 5, 5), position, `cliff_block_rock${i}`, scene, boundingBoxes);
+
         scene.add(meshes[`cliff_block_rock${i}`]);
+    }
+
+    //CONSTRAINTS OF THE MAP
+    const gravePositions = [
+        new THREE.Vector3(0, -3, -57),  //Position for the back side (behind the initial camera view)
+        new THREE.Vector3(57, -3, 0),
+        new THREE.Vector3(0, -3, 57),
+        new THREE.Vector3(-57, -3, 0)
+    ];
+
+    const graveRotations = [
+        Math.PI / 2,
+        Math.PI,
+        -Math.PI / 2,
+        0
+    ];
+
+    for (let i = 0; i < gravePositions.length; i++) {
+        const position = gravePositions[i];
+        const rotation = graveRotations[i];
+
+        meshes[`GraveFree${i}`].rotation.y += rotation;
+        addBoundingBox(meshes[`GraveFree${i}`], new THREE.Vector3(7, 7, 7), position, `GraveFree${i}`, scene, boundingBoxes);
+        scene.add(meshes[`GraveFree${i}`]);
     }
 
     //player weapon
@@ -612,7 +643,6 @@ function onResourcesLoaded(){
     meshes["playerWeapon"].scale.set(10, 10, 10);
 
     //console.log(meshes); here you can see how important asynchronous loop is because if you stamp you see that there are not ordered as they have been put in the closed loop "_key"
-
 
 }
 
@@ -645,6 +675,11 @@ function checkCollision() {                                                     
 
 function checkCollisionZombieWithMeshes(thisZombieCapsuleBox) {
     for (const key in boundingBoxes) {
+        // Skip collision check for GraveFree (graveyard)
+        if (key.includes('GraveFree')) {
+            continue;
+        }
+
         const zombieBox = new THREE.Box3().setFromObject(thisZombieCapsuleBox);
         if (boundingBoxes[key].intersectsBox(zombieBox)) {
             //console.log('zombieBox hitted');
@@ -948,7 +983,7 @@ function animate() {
                 direction.subVectors(camera.position, zombie.position).normalize(); //Calculate the direction towards the camera, using normalize to make the vector be of unit 1 and maintain the direction
 
                 //Setup zombies' velocity
-                const zombieSpeed = 3.6;
+                const zombieSpeed = 1.6;
 
                 const actualBoxPos = capsuleBoundingBoxes.zombie[key].cBBox.position.clone();
                 const actualZombiePos = zombie.position.clone();
