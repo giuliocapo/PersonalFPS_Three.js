@@ -40,7 +40,7 @@ var mixers = [];
 
 
 //create a player object to hold details about the 'player', such as height and move speed
-var player = { hp: 20, height: 1.8, speed: 0.2 ,turnSpeed:Math.PI*0.002, canShoot: 0 , bBox: null};
+var player = { hp: 20, height: 1.8, speed: 0.5 ,turnSpeed:Math.PI*0.008, canShoot: 0 , bBox: null};
 
 //GUI command for speed and turnspeed
 {
@@ -1092,7 +1092,7 @@ function animate() {
 
         bullets.push(bullet);
         scene.add(bullet);
-        player.canShoot = 40; //1 bullet per 20 frames
+        player.canShoot = 20; //3 bullet per sec
     }
     if (player.canShoot > 0) {
         player.canShoot -= 1;
