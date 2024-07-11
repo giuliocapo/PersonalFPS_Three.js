@@ -300,6 +300,10 @@ continue;
 37.
 safe spot updating, left the idea of copy the same spot, but creating different spot is cool.
 
+38.
+safe spot done for each corner.
+inserisci se vuoi il path che va ai 4 angoli con le rocce
+
 FAI VEDERE ALL'ESAME:
 IO HO PRATICAMENTE TUTTE ANIMATION PER TRASFORMATION.
 IMPARA BENE LE FUNZIONI IN TOTALE, CIOè COME FUNZIONA TUTTO IL SISTEMA DI SPARO DA QUANDO CREI LA SFERA MESH E POI CON LA VELOCITA LA SPOSTI FUORI SU ANIMATE

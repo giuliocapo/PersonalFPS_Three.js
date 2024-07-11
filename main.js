@@ -13,6 +13,7 @@ import {Sky} from "three/addons/objects/Sky.js";
 import {gui} from "./GUIManager";
 import {bulletSound, deathSound, easterEgg, initAmbientAudio, randomDeathZombieSound} from "./AudioLoader";
 import {getRandomPosition, getRandomPositionOnEdge} from "./positionRandomizer";
+import {add} from "three/examples/jsm/nodes/math/OperatorNode";
 
 
 var scene, camera, renderer, mesh;
@@ -79,11 +80,10 @@ var models = {
         mesh: null,
 
     },
-    campfire_stones: {
-        obj: "Models/OBJ format/campfire_stones.obj",
-        mtl: "Models/OBJ format/campfire_stones.mtl",
+    campfire_bricks:{
+        obj: "Models/OBJ format/campfire_bricks.obj",
+        mtl: "Models/OBJ format/campfire_bricks.mtl",
         mesh: null,
-
     },
     cliff_block_rock: {
         obj: "Models/OBJ format/cliff_block_rock.obj",
@@ -104,6 +104,46 @@ var models = {
     campfire_planks:{
         obj: "Models/OBJ format/campfire_planks.obj",
         mtl: "Models/OBJ format/campfire_planks.mtl",
+        mesh: null,
+    },
+    tree_pineTallC_detailed:{
+        obj: "Models/OBJ format/tree_plateau_fall.obj",
+        mtl: "Models/OBJ format/tree_plateau_fall.mtl",
+        mesh: null,
+    },
+    tree_thin_fall:{
+        obj: "Models/OBJ format/tree_thin_fall.obj",
+        mtl: "Models/OBJ format/tree_thin_fall.mtl",
+        mesh: null,
+    },
+    stump_oldTall:{
+        obj: "Models/OBJ format/stump_oldTall.obj",
+        mtl: "Models/OBJ format/stump_oldTall.mtl",
+        mesh: null,
+    },
+    log_stackLarge:{
+        obj: "Models/OBJ format/log_stackLarge.obj",
+        mtl: "Models/OBJ format/log_stackLarge.mtl",
+        mesh: null,
+    },
+    path_stone:{
+        obj: "Models/OBJ format/path_stone.obj",
+        mtl: "Models/OBJ format/path_stone.mtl",
+        mesh: null,
+    },
+    stone_tallB:{
+        obj: "Models/OBJ format/stone_tallB.obj",
+        mtl: "Models/OBJ format/stone_tallB.mtl",
+        mesh: null,
+    },
+    statue_head:{
+        obj: "Models/OBJ format/statue_head.obj",
+        mtl: "Models/OBJ format/statue_head.mtl",
+        mesh: null,
+    },
+    bed_floor:{
+        obj: "Models/OBJ format/bed_floor.obj",
+        mtl: "Models/OBJ format/bed_floor.mtl",
         mesh: null,
     },
     pistol: {
@@ -269,7 +309,7 @@ function init() {
     meshFloor = new THREE.Mesh(
         new THREE.PlaneGeometry(mapSize,mapSize, mapSize,mapSize), //more segments = more polygons, which results in more detail.
         new THREE.MeshStandardMaterial( {
-            transparent: true,
+            //transparent: true,
             //alphaMap: floorAlphaTexture,
             map: floorColorTexture,
             aoMap: floorARMTexture,
@@ -572,16 +612,33 @@ function init() {
 
 
 //function to trigger when all resources are loaded
+
 function onResourcesLoaded(){
 
     // Clone models into meshes
     meshes["tent1"] = models.tent.mesh.clone();
     meshes["tent2"] = models.tent.mesh.clone();
-    meshes["campfire1"] = models.campfire_stones.mesh.clone();
-    meshes["campfire2"] = models.campfire_stones.mesh.clone();
+    meshes["campfire1"] = models.campfire_bricks.mesh.clone();
     meshes["crop_pumpkin"] = models.crop_pumpkin.mesh.clone();
     meshes["campfire_planks1"] = models.campfire_planks.mesh.clone();
     meshes["campfire_planks2"] = models.campfire_planks.mesh.clone();
+    meshes["campfire_planks3"] = models.campfire_planks.mesh.clone();
+    meshes["tree_pineTallC_detailed1"] = models.tree_pineTallC_detailed.mesh.clone();
+    meshes["tree_thin_fall1"] = models.tree_thin_fall.mesh.clone();
+    meshes["tree_thin_fall2"] = models.tree_thin_fall.mesh.clone();
+    meshes["tree_thin_fall3"] = models.tree_thin_fall.mesh.clone();
+    meshes["tree_thin_fall4"] = models.tree_thin_fall.mesh.clone();
+    meshes["tree_thin_fall5"] = models.tree_thin_fall.mesh.clone();
+    meshes["tree_thin_fall6"] = models.tree_thin_fall.mesh.clone();
+    meshes["log_stackLarge1"] = models.log_stackLarge.mesh.clone();
+    meshes["stump_oldTall1"] = models.stump_oldTall.mesh.clone();
+    meshes["stump_oldTall2"] = models.stump_oldTall.mesh.clone();
+    meshes["stump_oldTall3"] = models.stump_oldTall.mesh.clone();
+    meshes["stone_tallB1"] = models.stone_tallB.mesh.clone();
+    meshes["statue_head"] = models.statue_head.mesh.clone();
+    meshes["bed_floor"] = models.bed_floor.mesh.clone();
+
+
 
 
     meshes["GraveFree0"] = models.GraveFree.mesh.clone();
@@ -596,6 +653,11 @@ function onResourcesLoaded(){
     meshes["cliff_block_rock4"] = models.cliff_block_rock.mesh.clone();
     meshes["cliff_block_rock5"] = models.cliff_block_rock.mesh.clone();
     meshes["cliff_block_rock6"] = models.cliff_block_rock.mesh.clone();
+    meshes["cliff_block_rock7"] = models.cliff_block_rock.mesh.clone();
+    meshes["cliff_block_rock8"] = models.cliff_block_rock.mesh.clone();
+    meshes["cliff_block_rock9"] = models.cliff_block_rock.mesh.clone();
+    meshes["cliff_block_rock10"] = models.cliff_block_rock.mesh.clone();
+
 
 
     //Add bounding boxes and add to scene
@@ -605,13 +667,13 @@ function onResourcesLoaded(){
     const safeNWCornerSpot = new THREE.Group();
     scene.add(safeNWCornerSpot);
 
-    addBoundingBox(meshes["tent1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(38, 0, 45), 'tent1', scene, boundingBoxes);
+    addBoundingBox(meshes["tent1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(40, 0, 45), 'tent1', scene, boundingBoxes);
     meshes["tent1"].rotation.y += Math.PI
     safeNWCornerSpot.add(meshes["tent1"]);
 
-    addBoundingBox(meshes["campfire1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(38, 0, 40), 'campfire1', scene, boundingBoxes);
+    addBoundingBox(meshes["campfire1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(40, 0, 40), 'campfire1', scene, boundingBoxes);
     safeNWCornerSpot.add(meshes["campfire1"]);
-    const campfire1= lightFarm.addPointLight('#ff7d46', 14, new THREE.Vector3( 38,  1, 40));
+    const campfire1= lightFarm.addPointLight('#ff7d46', 14, new THREE.Vector3( 40,  1, 40));
     safeNWCornerSpot.add(campfire1);
 
     addBoundingBox(meshes["crop_pumpkin"], new THREE.Vector3(3, 3, 3), new THREE.Vector3(43, 0, 40), 'crop_pumpkin', scene, boundingBoxes);
@@ -621,21 +683,70 @@ function onResourcesLoaded(){
     const safeSWCornerSpot = new THREE.Group();
     scene.add(safeSWCornerSpot);
 
-    addBoundingBox(meshes["tent2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(38, 0, -45), 'tent2', scene, boundingBoxes);
-    safeSWCornerSpot.add(meshes["tent2"]);
+    meshes["tent2"].rotation.y += -Math.PI/4;
+    addBoundingBox(meshes["tent2"], new THREE.Vector3(4, 4, 4), new THREE.Vector3(43, 0, -43), 'tent2', scene, boundingBoxes);
 
-    addBoundingBox(meshes["campfire_planks1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(38, 0, -40), 'campfire_planks1', scene, boundingBoxes);
-    safeSWCornerSpot.add(meshes["campfire_planks1"]);
-    const campfire_planks1= lightFarm.addPointLight('#ff7d46', 14, new THREE.Vector3( 38,  1, -40));
-    safeNWCornerSpot.add(campfire_planks1);
+    addBoundingBox(meshes["campfire_planks1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(40, 0, -40), 'campfire_planks1', scene, boundingBoxes);
+    const campfire_planks1= lightFarm.addPointLight('#ff7d46', 14, new THREE.Vector3( 40,  1, -40));
+
+    //South West spot: trees
+    meshes["tree_pineTallC_detailed1"].position.set(48, 0, -40);
+    meshes["tree_pineTallC_detailed1"].scale.set(5,5,5);
+    meshes["tree_thin_fall1"].position.set(41, 0, -47);
+    meshes["tree_thin_fall1"].scale.set(5,5,5);
+    meshes["tree_thin_fall2"].position.set(44, 0, -47);
+    meshes["tree_thin_fall2"].scale.set(5,5,5);
+    meshes["tree_thin_fall3"].position.set(48, 0, -43);
+    meshes["tree_thin_fall3"].scale.set(5,5,5);
+
+    //South West spot: add meshes
+    safeSWCornerSpot.add(meshes["tent2"],meshes["campfire_planks1"],campfire_planks1,meshes["tree_pineTallC_detailed1"],meshes["tree_pineTallC_detailed1"],meshes["tree_thin_fall1"],meshes["tree_thin_fall2"],meshes["tree_thin_fall3"]);
+
+    //North Est spot
+    const safeNECornerSpot = new THREE.Group();
+    scene.add(safeNECornerSpot);
+
+    //North Est spot: trees
+    meshes["tree_thin_fall4"].position.set(-41, 0, 47);
+    meshes["tree_thin_fall4"].scale.set(5,5,5);
+    meshes["tree_thin_fall5"].position.set(-44, 0, 47);
+    meshes["tree_thin_fall5"].scale.set(5,5,5);
+    meshes["tree_thin_fall6"].position.set(-48, 0, 43);
+    meshes["tree_thin_fall6"].scale.set(5,5,5);
+    addBoundingBox(meshes["stone_tallB1"], new THREE.Vector3(4, 4, 4), new THREE.Vector3(-46, 0, 42), 'stone_tallB1', scene, boundingBoxes);
+
+    addBoundingBox(meshes["campfire_planks2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-43, 0, 42), 'campfire_planks2', scene, boundingBoxes);
+    const campfire_planks2= lightFarm.addPointLight('#ff7d46', 14, new THREE.Vector3( -43,  1, 42));
+
+    meshes["statue_head"].rotation.y += (-Math.PI/2) - (Math.PI/2.5);
+    addBoundingBox(meshes["statue_head"], new THREE.Vector3(4, 4, 4), new THREE.Vector3(-42, 0, 45), 'statue_head', scene, boundingBoxes);
+
+    //North Est spot: add meshes
+    safeSWCornerSpot.add(meshes["tree_thin_fall4"],meshes["tree_thin_fall5"],meshes["tree_thin_fall6"],meshes["stone_tallB1"],campfire_planks2, meshes["campfire_planks2"],meshes["statue_head"]);
 
 
-    //clone the safe spot and put in the other corners
-    const safeCornerSpot2 = safeNWCornerSpot.clone();
-    safeCornerSpot2.position.set(-80, 0, 0); //new position of cloned safe spot
-    scene.add(safeCornerSpot2);
+    //South Est spot
+    const safeSECornerSpot = new THREE.Group();
+    scene.add(safeSECornerSpot);
 
-    for (let i = 1; i <= 6; i++) {
+    addBoundingBox(meshes["campfire_planks3"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-43, 0, -42), 'campfire_planks3', scene, boundingBoxes);
+
+    addBoundingBox(meshes["log_stackLarge1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(-48, 0, -42), 'log_stackLarge1', scene, boundingBoxes);
+
+    //South Est spot: trees
+    meshes["stump_oldTall1"].position.set(-41, 0, -47);
+    meshes["stump_oldTall1"].scale.set(5,5,5);
+    meshes["stump_oldTall2"].position.set(-44, 0, -47);
+    meshes["stump_oldTall2"].scale.set(5,5,5);
+    meshes["stump_oldTall3"].position.set(-48, 0, -43);
+    meshes["stump_oldTall3"].scale.set(5,5,5);
+    meshes["bed_floor"].position.set(-45.3,  0, -42);
+    meshes["bed_floor"].scale.set(5,5,5);
+
+    //South Est spot: add meshes
+    safeSECornerSpot.add( meshes["campfire_planks3"],meshes["log_stackLarge1"],meshes["stump_oldTall1"],meshes["stump_oldTall2"],meshes["stump_oldTall3"],meshes["bed_floor"]);
+
+    for (let i = 1; i <= 10; i++) {
         const meshName = `cliff_block_rock${i}`;
         const position = getRandomPosition(100, 0, 100);
         addBoundingBox(meshes[meshName], new THREE.Vector3(5, 5, 5), position, `cliff_block_rock${i}`, scene, boundingBoxes);
