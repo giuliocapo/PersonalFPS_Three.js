@@ -24,6 +24,8 @@ var sphereGeometry = new THREE.SphereGeometry(0.3, 16, 16);
 var sphereMaterial = new THREE.MeshBasicMaterial({ color: '#8f00ff' });
 var ghostLight = new THREE.Mesh(sphereGeometry, sphereMaterial);
 
+//light
+var lightFarm; //lightfarm class
 
 var boxEasterEggValue = 10, boxEasterEgg, boxTexture, boxNormalMap, boxBumpMap;
 
@@ -99,11 +101,15 @@ var models = {
         mtl: "Models/OBJ format/GraveFree.mtl",
         mesh: null,
     },
+    campfire_planks:{
+        obj: "Models/OBJ format/campfire_planks.obj",
+        mtl: "Models/OBJ format/campfire_planks.mtl",
+        mesh: null,
+    },
     pistol: {
         obj: "Models/OBJ weapons/uziLong.obj",
         mtl: "Models/OBJ weapons/uziLong.mtl",
         mesh: null,
-
     }
 }
 //Meshes object to index and will store every object appears in the scene indexed by a key
@@ -435,7 +441,7 @@ function init() {
 
 
     // LIGHTS
-    const lightFarm = new LightFarm(scene);
+    lightFarm = new LightFarm(scene); //initialize constructor of the class
 
     //ghostLight
     spotLight = new THREE.SpotLight( '#86cdff', 100 );
@@ -451,12 +457,6 @@ function init() {
     const doorLight = lightFarm.addPointLight('#ff7d46', 7, new THREE.Vector3(0, 3, -2.4));
     house.add(doorLight);
 
-    //corner light
-    const cornerLight1 = lightFarm.addPointLight('#ff7d46', 7, new THREE.Vector3( 40,  6, 40));
-    const cornerLight2 = lightFarm.addPointLight('#ff7d46', 7, new THREE.Vector3( -40,  6, 40));
-    const cornerLight3 = lightFarm.addPointLight('#ff7d46', 7, new THREE.Vector3( 40,  6, -40));
-    const cornerLight4 = lightFarm.addPointLight('#ff7d46', 7, new THREE.Vector3( -40,  6, -40));
-    scene.add(cornerLight1,cornerLight2,cornerLight3,cornerLight4);
 
 
     //boxEasterEgg
@@ -525,6 +525,18 @@ function init() {
 
     //this is the loading of the strange GLTF mesh
     loadGLTFModel(scene, 'thing.glb', loadingManager);
+    //corner light
+    const cornerLight1 = lightFarm.addPointLight('#ff7d46', 14, new THREE.Vector3( 45,  4, 45));
+    const cornerLight2 = lightFarm.addPointLight('#ff7d46', 14, new THREE.Vector3( -45,  4, 45));
+    const cornerLight3 = lightFarm.addPointLight('#ff7d46', 14, new THREE.Vector3( 45,  4, -45));
+    const cornerLight4 = lightFarm.addPointLight('#ff7d46', 14, new THREE.Vector3( -45,  4, -45));
+    scene.add(cornerLight1,cornerLight2,cornerLight3,cornerLight4);
+
+    //if you want to see the helper for the north-west light
+    /*
+    const pointLightHelper = new THREE.PointLightHelper( cornerLight1, 1 );
+    scene.add( pointLightHelper );
+    */
 
 
     // Move the camera to 0,player.height,-5 (the Y axis is "up")
@@ -533,8 +545,7 @@ function init() {
     camera.lookAt(new THREE.Vector3(0, player.height, 0));
 
 
-
-    // Player Bounding Box creation
+    //Player Bounding Box creation
     const cameraBoundingBox = new THREE.BoxGeometry();
     const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
     const playerBox = new THREE.Mesh(cameraBoundingBox, material);
@@ -569,6 +580,10 @@ function onResourcesLoaded(){
     meshes["campfire1"] = models.campfire_stones.mesh.clone();
     meshes["campfire2"] = models.campfire_stones.mesh.clone();
     meshes["crop_pumpkin"] = models.crop_pumpkin.mesh.clone();
+    meshes["campfire_planks1"] = models.campfire_planks.mesh.clone();
+    meshes["campfire_planks2"] = models.campfire_planks.mesh.clone();
+
+
     meshes["GraveFree0"] = models.GraveFree.mesh.clone();
     meshes["GraveFree1"] = models.GraveFree.mesh.clone();
     meshes["GraveFree2"] = models.GraveFree.mesh.clone();
@@ -582,25 +597,41 @@ function onResourcesLoaded(){
     meshes["cliff_block_rock5"] = models.cliff_block_rock.mesh.clone();
     meshes["cliff_block_rock6"] = models.cliff_block_rock.mesh.clone();
 
+
     //Add bounding boxes and add to scene
 
-    //Safe corner spot
-    const safeCornerSpot = new THREE.Group();
-    scene.add(safeCornerSpot);
+    //Safe corner spots
+    //North West spot
+    const safeNWCornerSpot = new THREE.Group();
+    scene.add(safeNWCornerSpot);
 
     addBoundingBox(meshes["tent1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(38, 0, 45), 'tent1', scene, boundingBoxes);
     meshes["tent1"].rotation.y += Math.PI
-    safeCornerSpot.add(meshes["tent1"]);
+    safeNWCornerSpot.add(meshes["tent1"]);
 
     addBoundingBox(meshes["campfire1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(38, 0, 40), 'campfire1', scene, boundingBoxes);
-    safeCornerSpot.add(meshes["campfire1"]);
+    safeNWCornerSpot.add(meshes["campfire1"]);
+    const campfire1= lightFarm.addPointLight('#ff7d46', 14, new THREE.Vector3( 38,  1, 40));
+    safeNWCornerSpot.add(campfire1);
 
-    addBoundingBox(meshes["crop_pumpkin"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(40, 0, 40), 'crop_pumpkin', scene, boundingBoxes);
-    safeCornerSpot.add(meshes["crop_pumpkin"]);
+    addBoundingBox(meshes["crop_pumpkin"], new THREE.Vector3(3, 3, 3), new THREE.Vector3(43, 0, 40), 'crop_pumpkin', scene, boundingBoxes);
+    safeNWCornerSpot.add(meshes["crop_pumpkin"]);
+
+    //South West spot
+    const safeSWCornerSpot = new THREE.Group();
+    scene.add(safeSWCornerSpot);
+
+    addBoundingBox(meshes["tent2"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(38, 0, -45), 'tent2', scene, boundingBoxes);
+    safeSWCornerSpot.add(meshes["tent2"]);
+
+    addBoundingBox(meshes["campfire_planks1"], new THREE.Vector3(5, 5, 5), new THREE.Vector3(38, 0, -40), 'campfire_planks1', scene, boundingBoxes);
+    safeSWCornerSpot.add(meshes["campfire_planks1"]);
+    const campfire_planks1= lightFarm.addPointLight('#ff7d46', 14, new THREE.Vector3( 38,  1, -40));
+    safeNWCornerSpot.add(campfire_planks1);
 
 
     //clone the safe spot and put in the other corners
-    const safeCornerSpot2 = safeCornerSpot.clone();
+    const safeCornerSpot2 = safeNWCornerSpot.clone();
     safeCornerSpot2.position.set(-80, 0, 0); //new position of cloned safe spot
     scene.add(safeCornerSpot2);
 

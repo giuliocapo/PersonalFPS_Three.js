@@ -297,6 +297,8 @@ if (key.includes('GraveFree')) {
 continue;
 } so that now u can hit the zombie only when they join "YOUR MAP"
 
+37.
+safe spot updating, left the idea of copy the same spot, but creating different spot is cool.
 
 FAI VEDERE ALL'ESAME:
 IO HO PRATICAMENTE TUTTE ANIMATION PER TRASFORMATION.
@@ -309,7 +311,8 @@ RILEGGI:
 
 
 COSA VOGLIO FARE: RESTARTA LA PAGINA
-DEVI AGGIUNGERE UN SAFE SPOT PIU CARINO CON LA LUCE, , METTERE FANTASMI LUCI PER TERRA, RICARICA PISTOLA = potrei mettere un altra variabile per i colpi in player e ogni volta che clicco la space bar decremente quando sono a zero non entro nella funzione
+DEVI AGGIUNGERE UN SAFE SPOT PIU CARINO CON LA LUCE, , METTERE FANTASMI LUCI PER TERRA, RICARICA PISTOLA (lasciando il codice come è adesso
+potrei inserire una variabile che si "azzera" sparando quando sia azzera non mi fa piu saprare, ricaricando torna "positiva" e posso risparare ) = potrei mettere un altra variabile per i colpi in player e ogni volta che clicco la space bar decremente quando sono a zero non entro nella funzione
 per creare i proiettili e devo prima cliccare 'R' che mi fa partire un animazione tipo che ruota sulla linea verticale la pistola davanti a me
 come un cerchio di fuoco, si potrebbe fare, TERRENO E CASETTA COME IL KING DI 3JS, COMMENTA CON TIPO NUM 1, NUM 2 LE PARTI DEL CODICE
 DA FAR VEDERE DURANTE LA PRESENTAZIONE.
