@@ -332,7 +332,9 @@ function init() {
 
     //House Group
     const house = new THREE.Group(loadingManager); //create a group to create a house mesh that i can modify as a complete object
-    house.scale.set(2,2,2);
+    //scale house vector
+    const scaleHouseVector = new THREE.Vector3(2,2,2);
+    house.scale.copy(scaleHouseVector);
     scene.add(house);
 
     //Walls of the house
@@ -352,6 +354,15 @@ function init() {
         })
     )
     walls.position.y += 3/2; //beacuse height is 3 and is half in the floor, 3/2 = 1.5
+
+    //House boundingbox
+    // Create a bounding box from the walls object
+    boundingBoxes["walls"] = new THREE.Box3().setFromObject(walls);
+    //Create a scaling matrix
+    const scaleMatrix = new THREE.Matrix4().makeScale(scaleHouseVector.x, scaleHouseVector.y, scaleHouseVector.z); //this fun create a scaled matrix on x,y and z (diagonale), couldn't use matrix3 because boundingbox got only applyMatrix4.
+    //Apply the scaling matrix to the bounding box
+    boundingBoxes["walls"].applyMatrix4(scaleMatrix);
+
     house.add(walls); //add to the house group
 
     //Rooftop of the House
@@ -478,6 +489,11 @@ function init() {
     walls.castShadow = true;
     walls.receiveShadow = true;
     rooftop.castShadow = true;
+    bush1.castShadow = true;
+    bush2.castShadow = true;
+    bush3.castShadow = true;
+    bush4.castShadow = true;
+    bush5.castShadow = true;
 
 
     // LIGHTS
