@@ -45,7 +45,7 @@
             pointer-events: none;
             box-sizing: border-box;
         }
-        #playerHealth {
+        #centeredYell {
             position: absolute;
             top: 40%;
             left: 47.8%;
@@ -73,6 +73,23 @@
             visibility: hidden;
             z-index: 1001;
         }
+        #winScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 5s ease-out;
+            visibility: hidden;
+            z-index: 1001;
+        }
         #retryButton {
             padding: 10px 20px;
             margin-top: 20px;
@@ -82,6 +99,16 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        #restartButton {
+            padding: 10px 20px;
+            margin-top: 20px;
+            background-color: #444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
@@ -97,10 +124,14 @@
 <button id="toggleButton">Hide Commands</button>
 <button id="toggleCenterMarkerButton">Center Marker</button>
 <div id="centerMarker"></div>
-<div id="playerHealth"></div>
+<div id="centeredYell"></div>
 <div id="deathScreen">
     <h1>UNLUCKY, YOU DIED</h1>
     <button id="retryButton">RETRY</button>
+</div>
+<div id="winScreen">
+    <h1>YOU WON!</h1>
+    <button id="restartButton">RESTART</button>
 </div>
 <script type="module" src="./main.js"></script>
 <script>
@@ -109,7 +140,9 @@
     const centerMarker = document.getElementById('centerMarker');
     const toggleCenterMarkerButton = document.getElementById('toggleCenterMarkerButton');
     const deathScreen = document.getElementById('deathScreen');
+    const winScreen = document.getElementById('winScreen');
     const retryButton = document.getElementById('retryButton');
+    const restartButton = document.getElementById('restartButton');
 
     // Add toggle button functionality
     toggleButton.addEventListener('click', () => {
@@ -131,12 +164,21 @@
         }
     });
     function showPlayerHealth(health) {
-        const playerHealthDiv = document.getElementById('playerHealth');
+        const playerHealthDiv = document.getElementById('centeredYell');
         playerHealthDiv.textContent = `Player HP: ${health}`;
         playerHealthDiv.style.opacity = 1;
         setTimeout(() => {
             playerHealthDiv.style.opacity = 0;
         }, 1000); // Time to keep the text visible before fading out
+    }
+
+    function showFinalBossRage() {
+        const playerHealthDiv = document.getElementById('centeredYell');
+        playerHealthDiv.textContent = `PAY ATTENTION, BOSS IS IN RAGE!`;
+        playerHealthDiv.style.opacity = 1;
+        setTimeout(() => {
+            playerHealthDiv.style.opacity = 0;
+        }, 2000); // Time to keep the text visible before fading out
     }
 
     //show death screen when you die
@@ -146,6 +188,15 @@
     }
 
     retryButton.addEventListener('click', () => {
+        location.reload(); // Reload the page
+    });
+    //show win screen when you won
+    function showWinScreen() {
+        winScreen.style.visibility = 'visible';
+        winScreen.style.opacity = 1;
+    }
+
+    restartButton.addEventListener('click', () => {
         location.reload(); // Reload the page
     });
 

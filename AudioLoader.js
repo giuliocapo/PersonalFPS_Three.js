@@ -97,6 +97,24 @@ export function randomDeathZombieSound() {
         deathSound.play();
     });
 }
+
+export function WoWDBMSound(){
+    //Create a new audio source
+    const shootSound = new THREE.Audio(listener);
+
+    //Create an AudioLoader to load the audio file
+    const loader = new THREE.AudioLoader();
+
+    //Load the sound and play it once it is ready
+    loader.load('music/WoW-ICC-Sindragosa-DBMsound.mp3', (buffer) => {
+        //This is the callback function that will execute once the audio file is loaded
+
+        //Set the loaded audio buffer to the audio source
+        shootSound.setBuffer(buffer);
+        shootSound.setVolume(1);
+        shootSound.play();
+    });
+}
 //Easter egg function when you do something on the map launch this function killing the ambient sound inserting THE ZOMBIE SONG
 export function easterEgg(){
     //Create a new audio source

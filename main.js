@@ -11,9 +11,10 @@ import {
 import {LightFarm} from "./LightFarm";
 import {Sky} from "three/addons/objects/Sky.js";
 import {gui} from "./GUIManager";
-import {bulletSound, deathSound, easterEgg, initAmbientAudio, randomDeathZombieSound} from "./AudioLoader";
+import {bulletSound, deathSound, easterEgg, initAmbientAudio, randomDeathZombieSound, WoWDBMSound} from "./AudioLoader";
 import {getRandomPosition, getRandomPositionOnEdge} from "./positionRandomizer";
 import {add} from "three/examples/jsm/nodes/math/OperatorNode";
+import {threshold} from "three/examples/jsm/nodes/display/ColorAdjustmentNode";
 
 
 var scene, camera, renderer, mesh;
@@ -40,7 +41,7 @@ var mixers = [];
 
 
 //create a player object to hold details about the 'player', such as height and move speed
-var player = { hp: 20, height: 1.8, speed: 0.5 ,turnSpeed:Math.PI*0.008, canShoot: 0 , bBox: null};
+var player = { hp: 3, height: 1.8, speed: 0.5 ,turnSpeed:Math.PI*0.008, canShoot: 0 , bBox: null};
 
 //GUI command for speed and turnspeed
 {
@@ -1063,6 +1064,9 @@ function animate() {
                         if(zombieCount === 0){
                             addFinalBoss();
                         }
+                        if(zombieCount < 0){
+                            showWinScreen();
+                        }
                     }
                 }
             }
@@ -1227,29 +1231,31 @@ var finalBossAdded = false;
 var finalBossRaged = false;
 
 function addFinalBoss() {
-    // Set the zombie's rotation
-    meshes["zombie"].rotation.set(0, Math.PI, 0);
+    if (!finalBossAdded) {
+        // Set the zombie's rotation
+        meshes["zombie"].rotation.set(0, Math.PI, 0);
 
-    // Get a random position on the edge of the map
-    const position = getRandomPositionOnEdge(mapSize);
+        // Get a random position on the edge of the map
+        const position = getRandomPositionOnEdge(mapSize);
 
-    // Add a bounding box to the zombie
-    addCapsuleBoundingBox(meshes["zombie"], new THREE.Vector3(0.08, 0.08, 0.08), position, "zombie", scene, capsuleBoundingBoxes);
+        // Add a bounding box to the zombie
+        addCapsuleBoundingBox(meshes["zombie"], new THREE.Vector3(0.08, 0.08, 0.08), position, "zombie", scene, capsuleBoundingBoxes);
 
-    // Set the HP and last attack time for the zombie
-    capsuleBoundingBoxes.zombie["zombie"].hp = 50; // Increase HP for the final boss
-    capsuleBoundingBoxes.zombie["zombie"].lastAttackTime = 0;
+        // Set the HP and last attack time for the zombie
+        capsuleBoundingBoxes.zombie["zombie"].hp = 50; // Increase HP for the final boss
+        capsuleBoundingBoxes.zombie["zombie"].lastAttackTime = 0;
 
 
-    // Set spotlight position and target
-    finalBossSpotlight.position.set(position.x, position.y + 10, position.z);
-    finalBossSpotlight.target = meshes["zombie"];
+        // Set spotlight position and target
+        finalBossSpotlight.position.set(position.x, position.y + 10, position.z);
+        finalBossSpotlight.target = meshes["zombie"];
 
-    // Add the spotlight to the scene
-    scene.add(finalBossSpotlight);
-    //scene.add(finalBossSpotlight.target);
-    scene.add(meshes["zombie"]);
-    finalBossAdded = true;
+        // Add the spotlight to the scene
+        scene.add(finalBossSpotlight);
+        //scene.add(finalBossSpotlight.target);
+        scene.add(meshes["zombie"]);
+        finalBossAdded = true;
+    }
 }
 
 // Update function to keep the spotlight above the final boss
@@ -1265,16 +1271,23 @@ function updateFinalBossSpotlight() {
 }
 
 //final boss go in rage
-function finalBossRage(){
-    if (capsuleBoundingBoxes.zombie["zombie"] && capsuleBoundingBoxes.zombie["zombie"].hp === 25 && capsuleBoundingBoxes.zombie["zombie"].hp) {
-        console.log('Zombie is in rage mode, avoiding all collisions');
-        // Color the zombie red
-        colorFBXModel(meshes["zombie"], "red");
-        finalBossSpotlight.color.set(0xff0000);
-        finalBossRaged = true;
+var bossInRageEffect = false;
+function finalBossRage() {
+    if (!bossInRageEffect) {//to let them start only one time
+        if (capsuleBoundingBoxes.zombie["zombie"] && capsuleBoundingBoxes.zombie["zombie"].hp === 25 && capsuleBoundingBoxes.zombie["zombie"].hp) {
+            console.log('Zombie is in rage mode, avoiding all collisions');
+
+            // Color the zombie red
+            colorFBXModel(meshes["zombie"], "red");
+            finalBossSpotlight.color.set(0xff0000);
+            finalBossRaged = true;
+
+            showFinalBossRage();
+            WoWDBMSound();
+            bossInRageEffect = true;
+        }
     }
 }
-
 
 
 function KeyDown(event) {
