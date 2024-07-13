@@ -3,8 +3,8 @@ import * as THREE from 'three';
 import {
     addBoundingBox,
     addCapsuleBoundingBox,
-    addCapsuleOpacityGui,
-    LoadAnimatedModel,
+    addCapsuleOpacityGui, colorFBXModel,
+    LoadAnimatedModel, LoadAnimatedModelFinalBoss,
     loadGLTFModel,
     loadModels
 } from "./ModelLoader";
@@ -543,7 +543,7 @@ function init() {
 
 
     //ZOMBIE creation, fabric, factory
-    zombieCount = 6;
+    zombieCount = 1;
 
     for (let i = 1; i <= zombieCount; i++) {
         const zombieName = `zombie${i}`;
@@ -564,20 +564,16 @@ function init() {
     //load FinalBoss
     function loadBoss(){
         const zombieName = `zombie`;
-        LoadAnimatedModel('zombie/', 'Mremireh_O_Desbiens.fbx', 'Walking.fbx', 'Zombie_Attack.fbx', "Moonwalk.fbx", zombieName, mixers, scene, meshes, loadingManager)
+        LoadAnimatedModelFinalBoss('zombie/', 'Mremireh_O_Desbiens.fbx', 'Walking.fbx', 'Zombie_Attack.fbx', "Moonwalk.fbx", zombieName, mixers, scene, meshes, loadingManager)
             .then(() => {
-                meshes[zombieName].rotation.set(0, Math.PI, 0);
-                const position = getRandomPositionOnEdge(mapSize);
-                addCapsuleBoundingBox(meshes[zombieName], new THREE.Vector3(0.08, 0.08, 0.08), position, zombieName, scene, capsuleBoundingBoxes);
-                capsuleBoundingBoxes.zombie[zombieName].hp = 50; //added hp integer value to the sub object zombie with name zombie in this case. so now capsuleBoundingBoxes.zombie['zombie'] got mesh and hp.
-                capsuleBoundingBoxes.zombie[zombieName].lastAttackTime = 0;
             })
             .catch(error => {
                 console.error('Error loading model or animation:', error);
             });
     }
+    loadBoss();
 
-    loadFinalBoss = loadBoss; //to define it global
+    //loadFinalBoss = loadBoss; //to define it global
 
     //this is the loading of the strange GLTF mesh
     loadGLTFModel(scene, 'thing.glb', loadingManager);
@@ -832,6 +828,11 @@ function checkCollision() {                                                     
 }
 
 function checkCollisionZombieWithMeshes(thisZombieCapsuleBox) {
+    // Check if the zombie is in rage mode
+    if (finalBossRaged) {
+        return false; //Avoid all collisions
+    }
+
     for (const key in boundingBoxes) {
         // Skip collision check for GraveFree (graveyard)
         if (key.includes('GraveFree')) {
@@ -1058,8 +1059,9 @@ function animate() {
                         zombieCount -= 1;
                         randomDeathZombieSound();
                         console.log(zombieCount);
+                        //Load final boss (finalboss)
                         if(zombieCount === 0){
-                            loadFinalBoss();
+                            addFinalBoss();
                         }
                     }
                 }
@@ -1079,6 +1081,12 @@ function animate() {
             }
         }
 
+    }
+    //Update the final boss spotlight position
+    updateFinalBossSpotlight();
+    //final boss rage
+    if (finalBossAdded) {
+        finalBossRage();
     }
 
     //spacebar clicked to shoot, it creates a sphere geometry, bullets shoot
@@ -1205,12 +1213,67 @@ function animate() {
 
         }
     }
-
-
     // Draw the scene from the perspective of the camera.
     renderer.render(scene, camera);
 }
 
+//create the finalBoss spotlight
+var finalBossSpotlight = new THREE.SpotLight("#86cdff", 100); //need to set it black or transparent, then activate white and red meshes
+finalBossSpotlight.angle = Math.PI / 4;
+//finalBossSpotlight.penumbra = 0.1;
+finalBossSpotlight.position.set(0, 10, 0); //initial position
+
+var finalBossAdded = false;
+var finalBossRaged = false;
+
+function addFinalBoss() {
+    // Set the zombie's rotation
+    meshes["zombie"].rotation.set(0, Math.PI, 0);
+
+    // Get a random position on the edge of the map
+    const position = getRandomPositionOnEdge(mapSize);
+
+    // Add a bounding box to the zombie
+    addCapsuleBoundingBox(meshes["zombie"], new THREE.Vector3(0.08, 0.08, 0.08), position, "zombie", scene, capsuleBoundingBoxes);
+
+    // Set the HP and last attack time for the zombie
+    capsuleBoundingBoxes.zombie["zombie"].hp = 50; // Increase HP for the final boss
+    capsuleBoundingBoxes.zombie["zombie"].lastAttackTime = 0;
+
+
+    // Set spotlight position and target
+    finalBossSpotlight.position.set(position.x, position.y + 10, position.z);
+    finalBossSpotlight.target = meshes["zombie"];
+
+    // Add the spotlight to the scene
+    scene.add(finalBossSpotlight);
+    //scene.add(finalBossSpotlight.target);
+    scene.add(meshes["zombie"]);
+    finalBossAdded = true;
+}
+
+// Update function to keep the spotlight above the final boss
+function updateFinalBossSpotlight() {
+    if (finalBossAdded && meshes["zombie"]) {
+        finalBossSpotlight.position.set(
+            meshes["zombie"].position.x,
+            meshes["zombie"].position.y + 10,
+            meshes["zombie"].position.z
+        );
+        //finalBossSpotlight.target.updateMatrixWorld();
+    }
+}
+
+//final boss go in rage
+function finalBossRage(){
+    if (capsuleBoundingBoxes.zombie["zombie"] && capsuleBoundingBoxes.zombie["zombie"].hp === 25 && capsuleBoundingBoxes.zombie["zombie"].hp) {
+        console.log('Zombie is in rage mode, avoiding all collisions');
+        // Color the zombie red
+        colorFBXModel(meshes["zombie"], "red");
+        finalBossSpotlight.color.set(0xff0000);
+        finalBossRaged = true;
+    }
+}
 
 
 

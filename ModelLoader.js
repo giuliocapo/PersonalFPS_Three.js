@@ -66,7 +66,7 @@ export function addCapsuleBoundingBox(mesh, scale, position, key, scene, capsule
     box.getSize(size);
 
     //Create a capsule geometry with the calculated dimensions
-    const capsuleRadius = Math.min(size.x, size.z) / 2; //Capsule radius based on the smaller dimension between x and z
+    const capsuleRadius = Math.min(size.x, size.z) / 2; //Capsule radius based on the smaller dimension between x and z, because the problem was that the rectangulus created with only bounding box was too wide.
     const capsuleHeight = size.y - capsuleRadius * 2; //Height of the central cylinder
     const capsuleGeometry = new THREE.CapsuleGeometry(capsuleRadius, capsuleHeight, 4, 8);
 
@@ -74,7 +74,7 @@ export function addCapsuleBoundingBox(mesh, scale, position, key, scene, capsule
     const capsuleMesh = new THREE.Mesh(capsuleGeometry, capsuleMaterial);
 
     //Calculate the capsule position to center it relative to the model
-    const capsulePosition = new THREE.Vector3();
+    const capsulePosition = new THREE.Vector3(); //created to adjust also y
     capsulePosition.copy(position);
     capsulePosition.y += (capsuleHeight / 2 + capsuleRadius); //Adjust the position based on the capsule height unless it would be 50% under the ground in my case
 
@@ -146,6 +146,69 @@ export function LoadAnimatedModel(path, mesh, anime1, anime2, anime3, key, mixer
     });
 }
 
+export function LoadAnimatedModelFinalBoss(path, mesh, anime1, anime2, anime3, key, mixers, scene, meshes, loadingManager) {
+    return new Promise((resolve, reject) => {
+        const loader = new FBXLoader(loadingManager);
+        loader.setPath(path);
+        loader.load(mesh, (fbx) => {
+            //fbx.scale.setScalar(0.02); //now im doing it when i add boundingBoxes with the function boundingBdoxes above
+            fbx.traverse(c => {
+                c.castShadow = true;
+            });
+
+            const animLoader = new FBXLoader(loadingManager);
+            animLoader.setPath(path);
+            animLoader.load(anime1, (anim) => {
+                const mixer = new THREE.AnimationMixer(fbx);
+                mixers.push(mixer);
+                //Load primary animation
+                const primaryAction = mixer.clipAction(anim.animations[0]);
+                primaryAction.play();
+
+                //Load secondary animation
+                animLoader.load(anime2, (secondaryAnim) => {
+                    const secondaryAction = mixer.clipAction(secondaryAnim.animations[0]);
+
+                    //Load tertiary animation
+                    animLoader.load(anime3, (anim3) => {
+                        const tertiaryAction = mixer.clipAction(anim3.animations[0]);
+
+                        //save animations in userData
+                        fbx.userData.actions = {
+                            primary: primaryAction,
+                            secondary: secondaryAction,
+                            tertiary: tertiaryAction
+                        };
+
+                        meshes[key] = fbx;
+
+                        resolve(fbx); //resolve the promise when all three animations are loaded
+                    }, undefined, reject); //manage error for the animation 3 loading, undefined is the third onLoad variable, reject is for OnError
+
+                }, undefined, reject); //manage error for the animation 2 loading, undefined is the third onLoad variable, reject is for OnError
+
+            }, undefined, reject); //manage error for the animation 1 loading, undefined is the third onLoad variable, reject is for OnError
+
+        }, undefined, reject); //manage error for the model loading, undefined is the third onLoad variable, reject is for OnError
+    });
+}
+
+export function colorFBXModel(model, color) {
+    model.traverse(c => {
+        // Check if the child is a mesh and if it has a material
+        if (c.isMesh && c.material) {
+            // If the material is an array (e.g., multi-material), iterate through it
+            if (Array.isArray(c.material)) {
+                c.material.forEach(material => {
+                    material.color.set(color); // Set the color
+                });
+            } else {
+                // Otherwise, just set the color of the single material
+                c.material.color.set(color); // Set the color
+            }
+        }
+    });
+}
 export function loadGLTFModel(scene, url, loadingManager) {
     const loader = new GLTFLoader(loadingManager);
     loader.load(url, (gltf) => {
