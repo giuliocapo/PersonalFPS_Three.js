@@ -177,10 +177,10 @@ var bullets = [];
 
 
 function init() {
-    // Create a scene and camera
+    //Create a scene and camera //Presentation (2): PR1.1
     scene = new THREE.Scene();
 
-    // Perspective projection: like a cone with all lines converging at the camera's point
+    //Perspective projection: like a cone with all lines converging at the camera's point
     camera = new THREE.PerspectiveCamera(
         75, //field of view
         window.innerWidth / window.innerHeight,
@@ -192,7 +192,7 @@ function init() {
     //Ambient Music
     initAmbientAudio('music/Ambient 02.mp3', scene);
 
-    //Sky
+    //Sky //presentation(1): PR3.1
     {
         const sky = new Sky();
         sky.scale.set(mapSize + 10, mapSize + 10, mapSize + 10);
@@ -287,7 +287,7 @@ function init() {
     // Add the mesh to the scene.
     scene.add(mesh);
 
-    //Floor
+    //Floor //Presentation: PR1.3
     const floorAlphaTexture  = textureLoader.load('FloorTextures/alpha.jpg');
     const floorColorTexture = textureLoader.load('FloorTextures/red_laterite_soil_stones_diff_1k.jpg')
     const floorARMTexture = textureLoader.load('FloorTextures/red_laterite_soil_stones_arm_1k.jpg')//ambient occlusion roughness, metalness
@@ -613,7 +613,7 @@ function init() {
 
 
 
-    //renderer
+    //renderer //Presentation: PR1.2; Presentation(1): PR2.1
     renderer = new THREE.WebGLRenderer({ antialias: true }); // Ensure correct initialization of WebGLRenderer, antialiasing true to correct corner errors.
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
