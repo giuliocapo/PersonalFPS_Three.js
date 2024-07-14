@@ -25,6 +25,7 @@ var spotLight;
 var sphereGeometry = new THREE.SphereGeometry(0.3, 16, 16);
 var sphereMaterial = new THREE.MeshBasicMaterial({ color: '#8f00ff' });
 var ghostLight = new THREE.Mesh(sphereGeometry, sphereMaterial);
+var miniGhostLight1, miniGhostLight2, miniGhostLight3;
 
 //light
 var lightFarm; //lightfarm class
@@ -194,8 +195,8 @@ function init() {
     //Sky
     {
         const sky = new Sky();
-        sky.scale.set(100, 100, 100);
-        let skyVisible = false
+        sky.scale.set(mapSize + 10, mapSize + 10, mapSize + 10);
+        let skyVisible = true;
 
         sky.material.uniforms['turbidity'].value = 10;
         sky.material.uniforms['rayleigh'].value = 3;
@@ -203,9 +204,10 @@ function init() {
         sky.material.uniforms['mieDirectionalG'].value = 0.95;
         sky.material.uniforms['sunPosition'].value.set(0.3, -0.038, -0.95)
 
+        scene.add(sky); //add it at the start
         // Add GUI control for Sky
         const skyFolder = gui.addFolder('Sky');
-        skyFolder.add({skyVisible: false}, 'skyVisible').name('Toggle Sky').onChange((value) => {
+        skyFolder.add({skyVisible: true}, 'skyVisible').name('Toggle Sky').onChange((value) => {
             skyVisible = value;
             if (skyVisible) {
                 scene.add(sky);
@@ -219,7 +221,7 @@ function init() {
 
     //Fog
     {
-        scene.fog = new THREE.FogExp2('#808080', 0.05);
+        scene.fog = new THREE.FogExp2('#06343f', 0.05);
         const fogFolder = gui.addFolder('Fog');
         fogFolder.add({fogDensity: 0.05}, 'fogDensity', 0, 0.1).name('Fog Density').onChange((value) => {
             scene.fog.density = value;
@@ -280,8 +282,8 @@ function init() {
     mesh.receiveShadow = true; //tell the mesh to receive
     mesh.castShadow = true; //tell the mesh to cast shadows
 
-    mesh.position.z -= 5;
-    mesh.position.x += 7;
+    mesh.position.z -= 12;
+    mesh.position.x += 0;
     // Add the mesh to the scene.
     scene.add(mesh);
 
@@ -496,9 +498,14 @@ function init() {
     bush4.castShadow = true;
     bush5.castShadow = true;
 
-
     // LIGHTS
     lightFarm = new LightFarm(scene); //initialize constructor of the class
+
+    //add light with lightFarm
+    lightFarm.addAmbientLight('#86cdff', 0.220);
+
+    const doorLight = lightFarm.addPointLight('#ff7d46', 15, new THREE.Vector3(0, 3, -2.4));
+    house.add(doorLight);
 
     //ghostLight
     spotLight = new THREE.SpotLight( '#86cdff', 100 );
@@ -507,14 +514,11 @@ function init() {
     scene.add(spotLight);
     scene.add(ghostLight);
 
-
-    //add light with lightFarm
-    lightFarm.addAmbientLight('#86cdff', 0.220);
-
-    const doorLight = lightFarm.addPointLight('#ff7d46', 7, new THREE.Vector3(0, 3, -2.4));
-    house.add(doorLight);
-
-
+    //miniGhostLights
+    miniGhostLight1 = new THREE.PointLight("#8800ff", 6);
+    miniGhostLight2 = new THREE.PointLight("#ff0088", 6);
+    miniGhostLight3 = new THREE.PointLight("#ff0000", 6);
+    scene.add(miniGhostLight1, miniGhostLight2, miniGhostLight3);
 
     //boxEasterEgg
     {
@@ -889,19 +893,38 @@ function animate() {
     requestAnimationFrame(animate); //Tells the browser to smoothly render at 60Hz
 
     //Ghost
-    //calculate new spotlight position
+    //calculate ghost position
     const ghostTiming = Date.now() * 0.001; //time in seconds
     const radius = 45;
     const speed = 0.5;
 
 
-    spotLight.position.x = radius * Math.sin(ghostTiming * speed); //t * sin(teta) teta is the angle that change over time
+    spotLight.position.x = radius * Math.sin(ghostTiming * speed); //r * sin(teta) teta is the angle that change over time
     spotLight.position.z = radius * Math.cos(ghostTiming * speed); //r * cos(teta) teta is the angle that change over time
 
     //sincronize ghost with the spotlight
     ghostLight.position.copy(spotLight.position);
 
-    // Rotate our mesh.
+    //Calculate mini ghost lights positions
+    const offset = mapSize/2 * Math.sin(ghostTiming * speed/2);
+
+    miniGhostLight1.position.x = offset;
+    miniGhostLight1.position.z = offset;
+    miniGhostLight1.position.y = 0.5;
+
+    miniGhostLight2.position.x = -offset;
+    miniGhostLight2.position.z =  offset;
+    miniGhostLight2.position.y = 0.5;
+
+    miniGhostLight3.position.x =  (radius - 38) * Math.sin(ghostTiming * speed);
+    miniGhostLight3.position.z =  (radius -38) * Math.cos(ghostTiming * speed);
+    miniGhostLight3.position.y = Math.sin(ghostTiming * speed)*Math.sin(ghostTiming * speed*2.75)*Math.sin(ghostTiming * speed*3.23); //r * sin(teta) teta is the angle that change over time
+
+
+
+
+
+    //Rotate mesh (red box)
     mesh.rotation.x += 0.01;
     mesh.rotation.y += 0.02;
 
