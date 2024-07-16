@@ -7,7 +7,6 @@ export class LightFarm {
 
     addAmbientLight(color , intensity) {
         const ambientLight = new THREE.AmbientLight(color, intensity);
-        //ambientLight.castShadow = true;
         this.scene.add(ambientLight);
     }
 

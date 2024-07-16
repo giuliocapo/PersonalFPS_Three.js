@@ -13,8 +13,7 @@ import {Sky} from "three/addons/objects/Sky.js";
 import {gui} from "./GUIManager";
 import {bulletSound, deathSound, easterEgg, initAmbientAudio, randomDeathZombieSound, WoWDBMSound} from "./AudioLoader";
 import {getRandomPosition, getRandomPositionOnEdge} from "./positionRandomizer";
-import {add} from "three/examples/jsm/nodes/math/OperatorNode";
-import {threshold} from "three/examples/jsm/nodes/display/ColorAdjustmentNode";
+
 
 
 var scene, camera, renderer, mesh;
@@ -24,7 +23,7 @@ var meshFloor;
 var spotLight;
 var sphereGeometry = new THREE.SphereGeometry(0.3, 16, 16);
 var sphereMaterial = new THREE.MeshBasicMaterial({ color: '#8f00ff' });
-var ghostLight = new THREE.Mesh(sphereGeometry, sphereMaterial);
+var ghostLight = new THREE.Mesh(sphereGeometry, sphereMaterial); //Presentation(3): PR5.1
 var miniGhostLight1, miniGhostLight2, miniGhostLight3;
 
 //light
@@ -169,9 +168,6 @@ var capsuleBoundingBoxes = {
 
 var zombieCount;
 
-var loadFinalBoss; //function global so i can call in animate but define in init
-var finalBoss = {};
-
 //Bullets array to hold the bullets
 var bullets = [];
 
@@ -242,7 +238,7 @@ function init() {
         ]);
     }
 
-    //set up loading screen scene
+    //set up loading screen scene //Presentation(2): PR4.1
     loadingScreen.box.position.set(0,0,5);
     loadingScreen.camera.lookAt(loadingScreen.box.position);
     loadingScreen.scene.add(loadingScreen.box);
@@ -252,7 +248,7 @@ function init() {
     var loadingManager = new THREE.LoadingManager();
 
     loadingManager.onProgress = function(item, loaded, total){
-        console.log(item, loaded, total);
+        console.log(item, loaded, total); //updating me on the loaded objects
     };
 
     loadingManager.onLoad = function(){
@@ -261,7 +257,7 @@ function init() {
         setTimeout(function() {
             console.log("5 seconds have passed!");
             RESOURCES_LOADED = true; //change to false, so let it see after loaded all models, unless will lag forever :s
-            onResourcesLoaded();
+            onResourcesLoaded(); //start to clone meshes and placing them in the scene
         }, 5000);
     };
 
@@ -507,7 +503,7 @@ function init() {
     const doorLight = lightFarm.addPointLight('#ff7d46', 15, new THREE.Vector3(0, 3, -2.4));
     house.add(doorLight);
 
-    //ghostLight
+    //ghostLight //Presentation: PR5.2
     spotLight = new THREE.SpotLight( '#86cdff', 100 );
     spotLight.position.y = 3;
     spotLight.castShadow = true;
@@ -795,7 +791,7 @@ function onResourcesLoaded(){
         scene.add(meshes[`GraveFree${i}`]);
     }
 
-    //player weapon
+    //player weapon //Presentation(2): PR8.1
     meshes["playerWeapon"] = models.pistol.mesh.clone();
     meshes["playerWeapon"].position.set(0,1,0);
     scene.add(meshes["playerWeapon"]);
@@ -822,8 +818,8 @@ function reflectVector(velocity, normal) {
 
 //COLLISION FUNCTION
 //Player vs Meshes collision function
-function checkCollision() {                                                                                         //DA RIVEDERE
-    player.bBox.setFromCenterAndSize(camera.position, new THREE.Vector3(1, 2, 1)); //NEED TO REVIEW BECAUSE SEEMS LIKE DOESN'T WORK WITHOUT INCLUDING FIRST THE BOUNDING BOX OF PLAYER QUINDI A CHE SERVE SETFROMCENTER AND SIZE
+function checkCollision() {
+    player.bBox.setFromCenterAndSize(camera.position, new THREE.Vector3(1, 2, 1)); //use set from center and size because is better to update when check the collision the bbox that was created as box without specifieng the size.
     for (const key in boundingBoxes) {
         if (player.bBox.intersectsBox(boundingBoxes[key])) {
             return true;
@@ -870,14 +866,14 @@ function checkCollisionZombieWithPlayer(thisZombieCapsuleBox){
 const clock = new THREE.Clock();
 function animate() {
 
-    if ( RESOURCES_LOADED === false){
+    if ( RESOURCES_LOADED === false){ //Presentation: PR4.2
         requestAnimationFrame(animate)
 
-        // Rotate the loading screen box
+        //Rotate the loading screen box
         loadingScreen.box.rotation.x += 0.05;
         loadingScreen.box.rotation.y += 0.05;
 
-        // Bounce the loading screen box
+        //Bounce the loading screen box
         boxPosition += boxSpeed * boxDirection;
         if (boxPosition > 3 || boxPosition < -3) {
             boxDirection *= -1; // Reverse direction when hitting the boundary
@@ -892,7 +888,7 @@ function animate() {
 
     requestAnimationFrame(animate); //Tells the browser to smoothly render at 60Hz
 
-    //Ghost
+    //Ghost //Presentation: PR5.3
     //calculate ghost position
     const ghostTiming = Date.now() * 0.001; //time in seconds
     const radius = 45;
@@ -906,6 +902,7 @@ function animate() {
     ghostLight.position.copy(spotLight.position);
 
     //Calculate mini ghost lights positions
+    //ghostTiming * speed/2 is just to have it to change over time, multiplication by mapSize/2 is to let it change between -50,50
     const offset = mapSize/2 * Math.sin(ghostTiming * speed/2);
 
     miniGhostLight1.position.x = offset;
@@ -916,9 +913,9 @@ function animate() {
     miniGhostLight2.position.z =  offset;
     miniGhostLight2.position.y = 0.5;
 
-    miniGhostLight3.position.x =  (radius - 38) * Math.sin(ghostTiming * speed);
-    miniGhostLight3.position.z =  (radius -38) * Math.cos(ghostTiming * speed);
-    miniGhostLight3.position.y = Math.sin(ghostTiming * speed)*Math.sin(ghostTiming * speed*2.75)*Math.sin(ghostTiming * speed*3.23); //r * sin(teta) teta is the angle that change over time
+    miniGhostLight3.position.x =  (radius - 38) * Math.sin(ghostTiming * speed); //r * sin(teta) teta is the angle that change over time
+    miniGhostLight3.position.z =  (radius -38) * Math.cos(ghostTiming * speed);  //r * sin(teta) teta is the angle that change over time
+    miniGhostLight3.position.y = Math.sin(ghostTiming * speed)*Math.sin(ghostTiming * speed*2.75)*Math.sin(ghostTiming * speed*3.23);
 
 
 
@@ -933,7 +930,7 @@ function animate() {
 
 
     // Keyboard movement inputs
-    if(keyboard[87]){ // W key
+    if(keyboard[87]){ // W key //Presentation: PR6.2
         const previousPosition = camera.position.clone();
         camera.position.x -= Math.sin(camera.rotation.y) * player.speed;
         camera.position.z -= -Math.cos(camera.rotation.y) * player.speed;
@@ -975,7 +972,7 @@ function animate() {
         camera.rotation.y += player.turnSpeed;
     }
 
-    //create a loop to update the bullets every frame. Bullets creation.
+    //create a loop to update the bullets every frame. //Presentation: PR9.2 //Presentation(1): PR10.1
     for(var index = 0; index < bullets.length; index += 1) {
         if (bullets[index] === undefined) continue;
         if (bullets[index].alive === false) { //if the bullet is not alive, skip to the next one and remove this one
@@ -984,7 +981,7 @@ function animate() {
         }
         bullets[index].position.add(bullets[index].velocity); //add velocity to bullet's position
 
-        // Check for bullet collisions with models
+        //Check for bullet collisions with models
         for (var key in boundingBoxes) {
             //console.log(boundingBoxes[key] ,key);
             if (boundingBoxes[key] !== null) {
@@ -1095,7 +1092,8 @@ function animate() {
             }
         }
 
-            //check collision easter egg
+        //check collision easter egg
+        //i'm animating the easter egg so i need to do this whole check every frame also the boundingbox
         var bulletBox = new THREE.Box3().setFromObject(bullets[index]);
         var easterEggBox = new THREE.Box3().setFromObject(boxEasterEgg);
         if (bulletBox.intersectsBox(easterEggBox)) {
@@ -1116,6 +1114,8 @@ function animate() {
         finalBossRage();
     }
 
+    //Presentation(2): PR9.1
+    //Bullets creation.
     //spacebar clicked to shoot, it creates a sphere geometry, bullets shoot
     if (keyboard[32] && player.canShoot <= 0){
         bulletSound();
@@ -1149,23 +1149,25 @@ function animate() {
         player.canShoot -= 1;
     }
 
-    // position the gun in front of the camera (position weapon)
+
+    //position the gun in front of the camera (position weapon) //Presentation: PR8.2
     var time = Date.now() * 0.0005;
 
     meshes["playerWeapon"].position.set(
         camera.position.x - Math.sin(camera.rotation.y + Math.PI/6) * 0.75,
         camera.position.y - 0.5 + Math.sin(time*4 + camera.position.x + camera.position.z)*0.01, //I added the camera.position.x and z to make the inhalation animation irregular when I'm moving
-        camera.position.z  + Math.cos(camera.rotation.y + Math.PI/6) * 0.75
+        camera.position.z + Math.cos(camera.rotation.y + Math.PI/6) * 0.75
     );
     meshes["playerWeapon"].rotation.set(
         camera.rotation.x,
-        camera.rotation.y - Math.PI,
+        camera.rotation.y - Math.PI, //was directed in the wrong side (to the player)
         camera.rotation.z
     );
 
     const delta = clock.getDelta(); //the time passed since last frame
     mixers.forEach(mixer => mixer.update(delta)); //update the animation respect to the real time(delta)
 
+    //Presentation(1): PR7.1
     // Move zombie towards the camera
     for (const key in meshes) {
         if (key.startsWith('zombie')) { //check only the mesh that start with zombie that are obviously zombie, so I have all the meshes loaded in mesh without changing anything
@@ -1193,8 +1195,7 @@ function animate() {
 
                 // Calculate the rotation to let him look at the camera (player)
                 const lookAtPosition = new THREE.Vector3(camera.position.x, zombie.position.y, camera.position.z);
-                zombie
-                    .lookAt(lookAtPosition);
+                zombie.lookAt(lookAtPosition);
 
                 //zombie collision meshes
                 if(checkCollisionZombieWithMeshes(capsuleBoundingBoxes.zombie[key].cBBox)) { //if this is true the zombie im blocking is the one making this true so the one on which we are updating position
@@ -1206,6 +1207,7 @@ function animate() {
                     capsuleBoundingBoxes.zombie[key].cBBox.position.copy(actualBoxPos);
                     zombie.position.copy(actualZombiePos);
 
+                    //userData contains animations
                     zombie.userData.actions.primary.stop();
                     zombie.userData.actions.secondary.play();
 
@@ -1312,7 +1314,7 @@ function finalBossRage() {
     }
 }
 
-
+//Presentation(2): PR6.1
 function KeyDown(event) {
     if(player.hp > 0) { //check if player is alive and so if he can play
         keyboard[event.keyCode] = true;
