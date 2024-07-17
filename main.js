@@ -11,7 +11,15 @@ import {
 import {LightFarm} from "./LightFarm";
 import {Sky} from "three/addons/objects/Sky.js";
 import {gui} from "./GUIManager";
-import {bulletSound, deathSound, easterEgg, initAmbientAudio, randomDeathZombieSound, WoWDBMSound} from "./AudioLoader";
+import {
+    bulletSound,
+    deathSound,
+    easterEgg,
+    initAmbientAudio,
+    randomDeathZombieSound,
+    victorySound,
+    WoWDBMSound
+} from "./AudioLoader";
 import {getRandomPosition, getRandomPositionOnEdge} from "./positionRandomizer";
 
 
@@ -41,7 +49,7 @@ var mixers = [];
 
 
 //create a player object to hold details about the 'player', such as height and move speed
-var player = { hp: 3, height: 1.8, speed: 0.5 ,turnSpeed:Math.PI*0.008, canShoot: 0 , bBox: null};
+var player = { hp: 200, height: 1.8, speed: 0.5 ,turnSpeed:Math.PI*0.008, canShoot: 0 , bBox: null};
 
 //GUI command for speed and turnspeed
 {
@@ -914,7 +922,7 @@ function animate() {
     miniGhostLight2.position.y = 0.5;
 
     miniGhostLight3.position.x =  (radius - 38) * Math.sin(ghostTiming * speed); //r * sin(teta) teta is the angle that change over time
-    miniGhostLight3.position.z =  (radius -38) * Math.cos(ghostTiming * speed);  //r * sin(teta) teta is the angle that change over time
+    miniGhostLight3.position.z =  (radius -38) * Math.cos(ghostTiming * speed);  //r * cos(teta) teta is the angle that change over time
     miniGhostLight3.position.y = Math.sin(ghostTiming * speed)*Math.sin(ghostTiming * speed*2.75)*Math.sin(ghostTiming * speed*3.23);
 
 
@@ -992,7 +1000,7 @@ function animate() {
                 // console.log('Model Box:', models[key].bbox); // Debugging statement for model box
 
 
-                if (bulletBox.intersectsBox(boundingBoxes[key])) {
+                if (bulletBox.intersectsBox(boundingBoxes[key])) { //when hit a model
                     console.log('Hit:', key);
 
                     //calculate the NORMAL on the hitted surface
@@ -1046,17 +1054,12 @@ function animate() {
                     }
 
 
-                    //moves the bullet a bit from the surface because it was remaining blocked inside some meshes.
+                    //moves the bullet a bit far from the surface because it was remaining blocked inside some meshes.
                     bullets[index].position.add(normal.clone().multiplyScalar(0.1));
 
                     //reflect the velocity of the bullet that will be updated with bullets[index].position.add(bullets[index].velocity) here above
                     bullets[index].velocity = reflectVector(bullets[index].velocity, normal);
 
-                    /*
-                    bullets[index].alive = false;
-                    scene.remove(bullets[index]);
-                    //scene.remove(meshes[key]);
-                     */
                 }
             }
         }
@@ -1085,7 +1088,8 @@ function animate() {
                             addFinalBoss();
                         }
                         if(zombieCount < 0){
-                            showWinScreen();
+                            showWinScreen(); //victory
+                            victorySound();
                         }
                     }
                 }

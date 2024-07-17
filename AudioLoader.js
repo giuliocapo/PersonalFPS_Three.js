@@ -84,7 +84,7 @@ export function randomDeathZombieSound() {
     const soundFiles = ['music/zombie-death-2.mp3', 'music/Zombie-In-Pain-Sound.mp3'];
 
     // Select a random sound file from the array
-    const randomIndex = Math.floor(Math.random() * soundFiles.length); //I added also the soundFile.lenght to give more randomicity (random algorithm aren't so good)
+    const randomIndex = Math.floor(Math.random() * soundFiles.length); //I added soundFiles.lenght because so can be 1 or 2
     const selectedSound = soundFiles[randomIndex];
 
     //Load the selected sound and play it once it is ready
@@ -115,6 +115,25 @@ export function WoWDBMSound(){
         shootSound.play();
     });
 }
+
+export function victorySound(){
+    //Create a new audio source
+    const shootSound = new THREE.Audio(listener);
+
+    //Create an AudioLoader to load the audio file
+    const loader = new THREE.AudioLoader();
+
+    //Load the sound and play it once it is ready
+    loader.load('music/victory_sound.mp3', (buffer) => {
+        //This is the callback function that will execute once the audio file is loaded
+
+        //Set the loaded audio buffer to the audio source
+        shootSound.setBuffer(buffer);
+        shootSound.setVolume(1);
+        shootSound.play();
+    });
+}
+
 //Easter egg function when you do something on the map launch this function killing the ambient sound inserting THE ZOMBIE SONG
 export function easterEgg(){
     //Create a new audio source

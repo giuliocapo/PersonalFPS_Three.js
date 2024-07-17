@@ -44,7 +44,7 @@ export function addBoundingBox(mesh, scale, position, key, scene, boundingBoxes)
     mesh.updateMatrixWorld(true);
 
     const boxHelper = new THREE.BoxHelper(mesh, 0xff0000);
-    scene.add(boxHelper);
+    //scene.add(boxHelper);
 
     boundingBoxes[key] = new THREE.Box3().setFromObject(mesh);
     console.log(`${key} BBox:`, boundingBoxes[key]);
