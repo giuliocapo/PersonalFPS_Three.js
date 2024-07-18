@@ -1,4 +1,4 @@
-This is my personal FPS, i'm building the idea while studying three.js here i will write the steps of my implementation:
+This is my personal FPS, i'm building the idea while studying three.js here i will write (more or less specific) the steps of my implementation:
 THE PR COMMENTS ARE FOR THE PRESENTATION WITH THE SLIDES.
 
 1.
@@ -317,21 +317,10 @@ added boss in rage label and doun of deadlyboss WOW, added also the win screen w
 
 41.
 ghost light added, 2 go on the corners to indicate the safe spot the other turn around the house with an y calculated on geogebra.
-FAI VEDERE ALL'ESAME:
-IO HO PRATICAMENTE TUTTE ANIMATION PER TRASFORMATION.
-IMPARA BENE LE FUNZIONI IN TOTALE, CIOè COME FUNZIONA TUTTO IL SISTEMA DI SPARO DA QUANDO CREI LA SFERA MESH E POI CON LA VELOCITA LA SPOSTI FUORI SU ANIMATE
-E POI SE HITTI SUCCEDE QUESTO ECC, UGUALE PER GLI ALTRI "SISTEMI" per ripeterla al meglio.
 
-ANIMATION: LOADING SCREEN, PISTOLA INALAZIONE ANIMAZIONE, PROIETTILE CHE PARTE DALLA PISTOLA, CADENZA, RIMBALZI PROIETTILI, SHADOW ECC ECC...
-
-RILEGGI:
+42.
+added some adjustment and victory_sound.mp3 with his logic
 
 
-COSA VOGLIO FARE: RESTARTA LA PAGINA
-metti canzoncina vittoria e vedi di fare l'animazione ricarica
-RICARICA PISTOLA (lasciando il codice come è adesso potrei inserire una variabile che si "azzera" sparando quando sia azzera non mi fa piu saprare, ricaricando torna "positiva" e posso risparare ) = potrei mettere un altra variabile per i colpi in player e ogni volta che clicco la space bar decremente quando sono a zero non entro nella funzione
-per creare i proiettili e devo prima cliccare 'R' che mi fa partire un animazione tipo che ruota sulla linea verticale la pistola davanti a me
-come un cerchio di fuoco, si potrebbe fare
-COMMENTA CON TIPO NUM 1, NUM 2 LE PARTI DEL CODICE
-DA FAR VEDERE DURANTE LA PRESENTAZIONE.
+
 

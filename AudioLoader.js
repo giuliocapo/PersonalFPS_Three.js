@@ -83,7 +83,7 @@ export function randomDeathZombieSound() {
     //Array of sound file paths
     const soundFiles = ['music/zombie-death-2.mp3', 'music/Zombie-In-Pain-Sound.mp3'];
 
-    // Select a random sound file from the array
+    //Select a random sound file from the array
     const randomIndex = Math.floor(Math.random() * soundFiles.length); //I added soundFiles.lenght because so can be 1 or 2
     const selectedSound = soundFiles[randomIndex];
 

@@ -1193,9 +1193,6 @@ function animate() {
                 //Update the position of the capsuleBoundingBox only on X and Z
                 capsuleBoundingBoxes.zombie[key].cBBox.position.addScaledVector(new THREE.Vector3(direction.x, 0, direction.z), zombieSpeed * delta);
 
-                //******************LEGGI**********
-                //QUI FAI LA COLLISIONE DEL TIPO SALVI LA POS DI PRIMA SE LA BOUNDING TOCCA UNA MESH ZOMBIE TORNI ALLA POSIZIONE DI PRIMA
-
 
                 // Calculate the rotation to let him look at the camera (player)
                 const lookAtPosition = new THREE.Vector3(camera.position.x, zombie.position.y, camera.position.z);
@@ -1246,7 +1243,7 @@ function animate() {
 
         }
     }
-    // Draw the scene from the perspective of the camera.
+    //Draw the scene from the perspective of the camera.
     renderer.render(scene, camera);
 }
 
@@ -1261,25 +1258,25 @@ var finalBossRaged = false;
 
 function addFinalBoss() {
     if (!finalBossAdded) {
-        // Set the zombie's rotation
+        //Set the zombie's rotation
         meshes["zombie"].rotation.set(0, Math.PI, 0);
 
-        // Get a random position on the edge of the map
-        const position = getRandomPositionOnEdge(mapSize);
+        //Get a random position on the edge of the map
+        const position = getRandomPositionOnEdge(mapSize + 50);
 
-        // Add a bounding box to the zombie
+        //Add a bounding box to the zombie
         addCapsuleBoundingBox(meshes["zombie"], new THREE.Vector3(0.08, 0.08, 0.08), position, "zombie", scene, capsuleBoundingBoxes);
 
-        // Set the HP and last attack time for the zombie
-        capsuleBoundingBoxes.zombie["zombie"].hp = 50; // Increase HP for the final boss
+        //Set the HP and last attack time for the zombie
+        capsuleBoundingBoxes.zombie["zombie"].hp = 50; //Increase HP for the final boss
         capsuleBoundingBoxes.zombie["zombie"].lastAttackTime = 0;
 
 
-        // Set spotlight position and target
+        //Set spotlight position and target
         finalBossSpotlight.position.set(position.x, position.y + 10, position.z);
         finalBossSpotlight.target = meshes["zombie"];
 
-        // Add the spotlight to the scene
+        //Add the spotlight to the scene
         scene.add(finalBossSpotlight);
         //scene.add(finalBossSpotlight.target);
         scene.add(meshes["zombie"]);
